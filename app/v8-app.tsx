@@ -815,7 +815,8 @@ export default function App() {
         background: T.bg,
         borderTop: `1px solid ${T.border}`,
         display: "flex", justifyContent: "space-around",
-        padding: "10px 0 max(14px, env(safe-area-inset-bottom))",
+        paddingTop: 8,
+        paddingBottom: "max(8px, env(safe-area-inset-bottom, 0px))",
       }}>
         {tabs.map(t => {
           const active = tab === t.id;
