@@ -3,37 +3,32 @@
 import { useState } from "react";
 import { useRouteProgress } from "@/hooks/use-route-progress";
 
-/* ─── Design Tokens (aligned with app T) ─── */
-const t = {
-  bg: "#FAFAF8",
-  surface: "#FFFFFF",
-  border: "rgba(0,0,0,0.06)",
-  borderLight: "rgba(0,0,0,0.04)",
-  text: "#1A1A1A",
-  sub: "#86847E",
-  muted: "#86847E",
-  faint: "#B5B3AD",
-  accent: "#C17F24",
-  accentBg: "rgba(193,127,36,0.08)",
-  accentBorder: "rgba(193,127,36,0.15)",
-  critical: "#7A1B1B",
+/* ─── Design Tokens (matching v8-app) ─── */
+const T = {
+  bg:        "#FAF9F6",
+  surface:   "#FFFFFF",
+  wash:      "#F3F2EF",
+  sunken:    "#E8E6E1",
+  text:      "#181511",
+  secondary: "#5C574F",
+  tertiary:  "#8E8A82",
+  accent:    "#9B6B2C",
+  accentSoft:"rgba(155,107,44,0.09)",
+  accentMid: "rgba(155,107,44,0.16)",
+  done:      "#28784A",
+  doneSoft:  "rgba(40,120,74,0.1)",
+  critical:  "#8B3A3A",
+  criticalSoft:"rgba(139,58,58,0.1)",
+  border:    "rgba(24,21,17,0.06)",
+  shadow:    "0 2px 8px rgba(24,21,17,0.04)",
+  sans:      "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
+  mono:      "'DM Mono', 'SF Mono', monospace",
+  r:         "12px",
+  rFull:     "999px",
+  ease:      "cubic-bezier(0.22, 1, 0.36, 1)",
 };
 
-const ff = {
-  sans: "'Instrument Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-  mono: "'DM Mono', 'SF Mono', monospace",
-};
-
-/* ─── Static Data ─── */
-const d = {
-  vehicle: "MG Hector CVT 1.5T · 19″",
-  mileage: "~11 km/l highway (loaded, 4 pax, AC)",
-  route: "NH 44 → NH 87 via Salem & Madurai",
-  totalDistance: "552 km",
-  totalTime: "~10 hrs",
-  fuelEstimate: "~50 L one-way",
-};
-
+/* ─── Route Data ─── */
 const phases = [
   { type: "stop", fn: "Chiku Drop-off", name: "Pet boarding / sitter", time: "5:30 AM", note: "Share vet contact · Print feeding schedule · Pack 3 days food", img: "/images/home.jpg" },
   { type: "drive", from: "Bengaluru", to: "Salem", distance: "200 km", time: "6:00 – 9:00 AM", highway: "NH 44" },
@@ -51,81 +46,192 @@ type Phase = (typeof phases)[number];
 /* ─── Page Component ─── */
 export default function CarRoutePage() {
   const { completed, toggle, loading } = useRouteProgress("rameshwaram-car-route");
+  const [exp, setExp] = useState<number | null>(null);
   const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
+
+  const doneCount = Object.values(completed).filter(Boolean).length;
 
   return (
     <>
       <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes lbFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes lbScaleIn {
-          from { opacity: 0; transform: scale(0.88); }
-          to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes softPulse{0%,100%{opacity:1}50%{opacity:0.5}}
+        @keyframes lbFadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes lbScaleIn{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
       `}</style>
 
       <div style={{
-        fontFamily: ff.sans,
-        background: t.bg,
-        minHeight: "100vh",
-        maxWidth: 430,
-        margin: "0 auto",
+        fontFamily: T.sans,
+        opacity: loading ? 0.5 : 1,
+        transition: "opacity 0.3s ease",
+        padding: "24px 24px 32px",
       }}>
-        {/* Vehicle grid */}
-        <div style={{ padding: "20px 20px 0", animation: "fadeUp 0.3s ease both" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <MetaCell label="Vehicle" value={d.vehicle} />
-            <MetaCell label="Mileage" value={d.mileage} />
-            <MetaCell label="Route" value={d.route} />
-            <MetaCell label="Fuel est." value={d.fuelEstimate} />
-          </div>
+        {/* Day header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.accent }}>Day 0</span>
+          <span style={{ fontSize: 12, color: T.tertiary }}>Feb 28</span>
+          <span style={{ width: 4, height: 4, borderRadius: "50%", background: T.tertiary, opacity: 0.6 }} />
+          <span style={{ fontSize: 12, color: T.secondary }}>Travel Day</span>
+          <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, fontVariantNumeric: "tabular-nums", fontFamily: T.mono, color: doneCount === phases.length && doneCount > 0 ? T.done : T.tertiary }}>
+            {doneCount}/{phases.length}
+          </span>
         </div>
 
-        {/* Divider */}
-        <div style={{ padding: "24px 20px 0" }}>
-          <div style={{ height: 1, background: t.border }} />
-        </div>
-
-        {/* Timeline */}
-        <div style={{
-          padding: "20px 20px 48px",
-          animation: "fadeUp 0.3s ease 0.08s both",
-          opacity: loading ? 0.5 : 1,
-          transition: "opacity 0.3s ease",
-        }}>
+        {/* Progress bar */}
+        <div style={{ height: 4, borderRadius: T.rFull, background: T.wash, marginBottom: 24, overflow: "hidden" }}>
           <div style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}>
-            <span style={{
-              fontSize: 9.5,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: t.faint,
-            }}>Timeline</span>
-            <span style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: Object.values(completed).filter(Boolean).length === phases.length ? t.accent : t.faint,
-              fontFamily: ff.mono,
-              transition: "color 0.2s ease",
-            }}>{Object.values(completed).filter(Boolean).length}/{phases.length}</span>
-          </div>
+            width: `${phases.length > 0 ? (doneCount / phases.length) * 100 : 0}%`,
+            height: "100%", borderRadius: T.rFull,
+            background: doneCount === phases.length && doneCount > 0 ? T.done : T.accent,
+            transition: `width .5s ${T.ease}`,
+          }} />
+        </div>
 
-          <div>
-            {phases.map((p, i) => (
-              <TimelineRow key={i} phase={p} isLast={i === phases.length - 1} index={i} done={!!completed[i]} onToggle={() => toggle(i)} totalPhases={phases.length} onImageTap={(src, label) => setLightbox({ src, label })} />
-            ))}
-          </div>
+        {/* Timeline card list */}
+        <div style={{ position: "relative", paddingLeft: 36 }}>
+          {/* Vertical rail */}
+          <div style={{ position: "absolute", left: 15, top: 14, bottom: 14, width: 2, background: T.wash, borderRadius: 1 }} />
+
+          {phases.map((p, i) => {
+            const done = !!completed[i];
+            const isExp = exp === i;
+            const isDrive = p.type === "drive";
+            const isArrival = p.type === "arrival";
+            const isStop = p.type === "stop";
+            const isCritical = "critical" in p && !!(p as Record<string, unknown>).critical;
+            const hasImg = "img" in p;
+            const hasNote = "note" in p;
+            const hasMaps = "maps" in p;
+            const expandable = hasNote || hasMaps;
+
+            // Card title
+            const title = "from" in p ? `${p.from} → ${p.to}` : "fn" in p ? p.fn : p.name;
+
+            return (
+              <div key={i} style={{ position: "relative", marginBottom: 2 }}>
+                {/* Timeline dot */}
+                <div
+                  onClick={(e) => { e.stopPropagation(); toggle(i); }}
+                  style={{
+                    position: "absolute", left: -31, top: 22,
+                    width: 16, height: 16, borderRadius: "50%", zIndex: 2,
+                    background: done ? T.done : isArrival ? T.accent : T.surface,
+                    border: done || isArrival ? "none" : `2px solid ${T.wash}`,
+                    boxShadow: isArrival && !done ? `0 0 0 3px ${T.accentSoft}` : "none",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: `all .25s ${T.ease}`, cursor: "pointer",
+                  }}
+                >
+                  {done && <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
+                  {isArrival && !done && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "white" }} />}
+                </div>
+                {isArrival && !done && (
+                  <div style={{ position: "absolute", left: -31, top: 22, width: 16, height: 16, borderRadius: "50%", border: `2px solid ${T.accent}`, opacity: 0.4, animation: "softPulse 2s ease-in-out infinite", zIndex: 1 }} />
+                )}
+
+                {/* Card body */}
+                <div
+                  onClick={() => expandable ? setExp(isExp ? null : i) : toggle(i)}
+                  style={{
+                    padding: "16px 18px",
+                    borderRadius: T.r,
+                    cursor: "pointer",
+                    background: isArrival ? T.surface : "transparent",
+                    border: isArrival ? `1px solid ${T.border}` : "1px solid transparent",
+                    boxShadow: isArrival ? T.shadow : "none",
+                    transition: `all .25s ${T.ease}`,
+                    marginBottom: 8,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    {/* Swatch */}
+                    {hasImg ? (
+                      <div
+                        onClick={(e) => { e.stopPropagation(); setLightbox({ src: (p as Record<string, string>).img, label: title }); }}
+                        style={{
+                          width: 44, height: 44, borderRadius: 12,
+                          overflow: "hidden", flexShrink: 0, cursor: "pointer",
+                        }}
+                      >
+                        <img src={(p as Record<string, string>).img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      </div>
+                    ) : (
+                      <div style={{
+                        width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                        background: isDrive ? T.wash : T.accentSoft,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: isDrive ? T.tertiary : T.accent,
+                      }}>
+                        {isDrive ? (
+                          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+                          </svg>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Title + meta */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        fontSize: isArrival ? 16 : 15,
+                        fontWeight: done ? 400 : isArrival ? 700 : 600,
+                        color: done ? T.tertiary : isCritical ? T.critical : isArrival ? T.accent : T.text,
+                        textDecoration: done ? "line-through" : "none",
+                        letterSpacing: "-0.02em",
+                        marginBottom: 4, lineHeight: 1.35,
+                      }}>{title}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 13, color: T.secondary, fontVariantNumeric: "tabular-nums", fontFamily: T.mono }}>
+                          {p.time}
+                        </span>
+                        {isDrive && "distance" in p && (
+                          <span style={{ fontSize: 11, fontWeight: 600, color: T.tertiary, background: T.wash, padding: "4px 10px", borderRadius: 8 }}>
+                            {p.distance} · {"highway" in p ? p.highway : ""}
+                          </span>
+                        )}
+                        {isCritical && (
+                          <span style={{ fontSize: 11, fontWeight: 600, color: T.critical, background: T.criticalSoft, padding: "4px 10px", borderRadius: 8 }}>Critical</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Chevron (only for expandable cards) */}
+                    {expandable && (
+                      <div style={{
+                        transform: isExp ? "rotate(180deg)" : "rotate(0)",
+                        transition: `transform .25s ${T.ease}`,
+                        color: T.tertiary, flexShrink: 0,
+                      }}>
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Expanded details */}
+                  {isExp && expandable && (
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${T.border}`, animation: "slideIn .2s ease both" }}>
+                      {"name" in p && !isDrive && (
+                        <p style={{ fontSize: 14, fontWeight: 500, color: T.text, marginBottom: 6 }}>{p.name}</p>
+                      )}
+                      {hasNote && (
+                        <p style={{ fontSize: 13, color: T.secondary, lineHeight: 1.65 }}>
+                          {(p as Record<string, string>).note}
+                        </p>
+                      )}
+                      {hasMaps && <MapPill url={(p as Record<string, string>).maps} />}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -134,223 +240,6 @@ export default function CarRoutePage() {
         <Lightbox src={lightbox.src} label={lightbox.label} onClose={() => setLightbox(null)} />
       )}
     </>
-  );
-}
-
-/* ─── MetaCell ─── */
-function MetaCell({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{
-      background: t.surface,
-      borderRadius: 16,
-      padding: "14px 16px",
-      border: `1px solid ${t.border}`,
-    }}>
-      <div style={{
-        fontSize: 9,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: "0.1em",
-        color: t.accent,
-        marginBottom: 5,
-      }}>{label}</div>
-      <div style={{
-        fontSize: 12.5,
-        fontWeight: 500,
-        color: t.text,
-        lineHeight: 1.4,
-      }}>{value}</div>
-    </div>
-  );
-}
-
-/* ─── TimelineRow ─── */
-function TimelineRow({ phase: p, isLast, index, done, onToggle, totalPhases, onImageTap }: {
-  phase: Phase;
-  isLast: boolean;
-  index: number;
-  done: boolean;
-  onToggle: () => void;
-  totalPhases: number;
-  onImageTap: (src: string, label: string) => void;
-}) {
-  const isDrive = p.type === "drive";
-  const isArrival = p.type === "arrival";
-  const isStop = p.type === "stop";
-
-  const dotColor = done
-    ? t.faint
-    : isArrival
-      ? t.accent
-      : isStop
-        ? ("critical" in p && p.critical ? t.critical : t.text)
-        : t.faint;
-
-  return (
-    <div
-      onClick={onToggle}
-      style={{
-        display: "flex",
-        gap: 20,
-        minHeight: isDrive ? 84 : isArrival ? 84 : 80,
-        animation: `fadeUp 0.3s ease ${0.12 + index * 0.035}s both`,
-        cursor: "pointer",
-        WebkitTapHighlightColor: "transparent",
-        opacity: done ? 0.4 : 1,
-        transition: "opacity 0.2s ease",
-      }}
-    >
-      {/* Rail */}
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: 14,
-        flexShrink: 0,
-        paddingTop: isArrival ? 5 : isDrive ? 9 : 7,
-      }}>
-        {/* Dot / Check */}
-        <div style={{
-          width: isArrival ? 12 : isStop ? 8 : 5,
-          height: isArrival ? 12 : isStop ? 8 : 5,
-          borderRadius: "50%",
-          background: done ? "none" : dotColor,
-          border: done ? `2px solid ${t.faint}` : "none",
-          flexShrink: 0,
-          boxShadow: isArrival && !done ? `0 0 0 4px ${t.accentBg}` : "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "all 0.2s ease",
-          position: "relative",
-        }}>
-          {done && (
-            <svg width={isArrival ? 8 : isStop ? 6 : 4} height={isArrival ? 8 : isStop ? 6 : 4} viewBox="0 0 10 10" fill="none">
-              <path d="M2 5.5L4 7.5L8 3" stroke={t.faint} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )}
-        </div>
-        {!isLast && (
-          <div style={{
-            width: 1.5,
-            flex: 1,
-            marginTop: 6,
-            background: isDrive
-              ? `repeating-linear-gradient(to bottom, ${done ? t.borderLight : t.faint} 0px, ${done ? t.borderLight : t.faint} 3px, transparent 3px, transparent 7px)`
-              : done ? t.borderLight : t.border,
-            transition: "background 0.2s ease",
-          }} />
-        )}
-      </div>
-
-      {/* Content */}
-      <div style={{
-        flex: 1,
-        paddingBottom: isLast ? 0 : 32,
-        minWidth: 0,
-      }}>
-        {isDrive && "from" in p && (
-          <>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-              <span style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: t.text,
-                letterSpacing: "-0.01em",
-                textDecoration: done ? "line-through" : "none",
-                textDecorationColor: t.faint,
-              }}>
-                {p.from} → {p.to}
-              </span>
-              <span style={{ fontSize: 11.5, color: t.faint, fontFamily: ff.mono }}>{p.distance}</span>
-              <span style={{ fontSize: 11.5, color: t.faint, fontFamily: ff.mono }}>{p.highway}</span>
-            </div>
-            <div style={{ fontSize: 12.5, color: t.muted, fontFamily: ff.mono, marginTop: 8 }}>
-              {p.time}
-            </div>
-          </>
-        )}
-
-        {isStop && "fn" in p && (
-          <div style={{ display: "flex", gap: 12 }}>
-            {"img" in p && p.img && (
-              <div
-                onClick={(e) => { e.stopPropagation(); onImageTap(p.img, p.name); }}
-                style={{ width: 40, height: 40, borderRadius: 11, overflow: "hidden", flexShrink: 0, marginTop: 2, cursor: "pointer" }}
-              >
-                <img src={p.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              </div>
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                <span style={{
-                  fontSize: 10.5,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: done ? t.faint : ("critical" in p && p.critical ? t.critical : t.accent),
-                }}>{p.fn}</span>
-                <span style={{ fontSize: 12, color: t.faint, fontFamily: ff.mono }}>{p.time}</span>
-              </div>
-              <div style={{
-                fontSize: 15,
-                fontWeight: 500,
-                color: t.text,
-                marginTop: 6,
-                letterSpacing: "-0.01em",
-                textDecoration: done ? "line-through" : "none",
-                textDecorationColor: t.faint,
-              }}>{p.name}</div>
-              <div style={{
-                fontSize: 12.5,
-                color: t.muted,
-                marginTop: 8,
-                lineHeight: 1.65,
-              }}>{p.note}</div>
-              {"maps" in p && p.maps && <MapPill url={p.maps} />}
-            </div>
-          </div>
-        )}
-
-        {isArrival && (
-          <div style={{ display: "flex", gap: 12 }}>
-            {"img" in p && p.img && (
-              <div
-                onClick={(e) => { e.stopPropagation(); onImageTap(p.img, p.name); }}
-                style={{ width: 44, height: 44, borderRadius: 12, overflow: "hidden", flexShrink: 0, marginTop: 2, cursor: "pointer" }}
-              >
-                <img src={p.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              </div>
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                <span style={{
-                  fontSize: 19,
-                  fontWeight: 700,
-                  color: done ? t.faint : t.accent,
-                  letterSpacing: "-0.025em",
-                  textDecoration: done ? "line-through" : "none",
-                  textDecorationColor: t.faint,
-                }}>{p.name}</span>
-                <span style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: done ? t.faint : t.accent,
-                  fontFamily: ff.mono,
-                }}>{p.time}</span>
-              </div>
-              <div style={{
-                fontSize: 13,
-                color: t.muted,
-                marginTop: 8,
-                lineHeight: 1.65,
-              }}>{p.note}</div>
-              {"maps" in p && p.maps && <MapPill url={p.maps} />}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -365,16 +254,15 @@ function MapPill({ url }: { url: string }) {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 6,
-        marginTop: 10,
-        padding: "7px 14px",
-        borderRadius: 100,
-        background: t.accentBg,
-        border: `1px solid ${t.accentBorder}`,
-        color: t.accent,
-        fontSize: 12,
+        gap: 8,
+        marginTop: 12,
+        padding: "10px 16px",
+        borderRadius: 10,
+        background: T.accentSoft,
+        color: T.accent,
+        fontSize: 13,
         fontWeight: 600,
-        fontFamily: ff.sans,
+        fontFamily: T.sans,
         textDecoration: "none",
         WebkitTapHighlightColor: "transparent",
       }}
@@ -394,72 +282,38 @@ function Lightbox({ src, label, onClose }: { src: string; label: string; onClose
     <div
       onClick={onClose}
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
+        position: "fixed", inset: 0, zIndex: 9999,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         background: "rgba(0,0,0,0.85)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
+        backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
         animation: "lbFadeIn 0.2s ease both",
-        cursor: "pointer",
-        padding: 24,
+        cursor: "pointer", padding: 24,
       }}
     >
-      {/* Close hint */}
       <div style={{
-        position: "absolute",
-        top: 16,
-        right: 20,
-        width: 32,
-        height: 32,
-        borderRadius: "50%",
+        position: "absolute", top: 16, right: 20,
+        width: 32, height: 32, borderRadius: "50%",
         background: "rgba(255,255,255,0.12)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M2 2L12 12M12 2L2 12" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
       </div>
-
-      {/* Image */}
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: 380,
-          width: "100%",
-          borderRadius: 16,
-          overflow: "hidden",
+          maxWidth: 380, width: "100%", borderRadius: 16, overflow: "hidden",
           boxShadow: "0 24px 64px rgba(0,0,0,0.4)",
           animation: "lbScaleIn 0.25s ease both",
         }}
       >
-        <img
-          src={src}
-          alt={label}
-          style={{
-            width: "100%",
-            display: "block",
-            maxHeight: "70vh",
-            objectFit: "cover",
-          }}
-        />
+        <img src={src} alt={label} style={{ width: "100%", display: "block", maxHeight: "70vh", objectFit: "cover" }} />
       </div>
-
-      {/* Label */}
       <div style={{
-        marginTop: 16,
-        fontSize: 14,
-        fontWeight: 600,
-        color: "rgba(255,255,255,0.8)",
-        fontFamily: ff.sans,
-        letterSpacing: "-0.01em",
-        textAlign: "center",
+        marginTop: 16, fontSize: 14, fontWeight: 600,
+        color: "rgba(255,255,255,0.8)", fontFamily: T.sans,
+        letterSpacing: "-0.01em", textAlign: "center",
         animation: "lbScaleIn 0.25s ease 0.05s both",
       }}>{label}</div>
     </div>

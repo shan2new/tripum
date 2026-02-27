@@ -16,28 +16,32 @@ import type { StepCard, BilingualText } from "@/lib/types";
 
 /* ─── Design Tokens ─── */
 const T = {
-  bg:        "#FAFAF8",
+  bg:        "#FAF9F6",
   surface:   "#FFFFFF",
-  wash:      "#F5F4F1",
-  sunken:    "#EFEEE9",
-  text:      "#1A1A1A",
-  secondary: "#86847E",
-  tertiary:  "#B5B3AD",
-  accent:    "#C17F24",
-  accentSoft:"rgba(193,127,36,0.08)",
-  accentMid: "rgba(193,127,36,0.15)",
-  done:      "#2DA44E",
-  doneSoft:  "rgba(45,164,78,0.08)",
-  blue:      "#3478F6",
-  blueSoft:  "rgba(52,120,246,0.08)",
-  border:    "rgba(0,0,0,0.06)",
-  shadow:    "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)",
-  shadowLg:  "0 2px 8px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.06)",
-  sans:      "'Instrument Sans', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
-  r:         "16px",
-  rLg:       "22px",
-  rFull:     "100px",
-  ease:      "cubic-bezier(0.25, 0.1, 0.25, 1)",
+  wash:      "#F3F2EF",
+  sunken:    "#E8E6E1",
+  text:      "#181511",
+  secondary: "#5C574F",
+  tertiary:  "#8E8A82",
+  accent:    "#9B6B2C",
+  accentHover:"#7D5522",
+  accentSoft:"rgba(155,107,44,0.09)",
+  accentMid: "rgba(155,107,44,0.16)",
+  done:      "#28784A",
+  doneSoft:  "rgba(40,120,74,0.1)",
+  blue:      "#2B6BBF",
+  blueSoft:  "rgba(43,107,191,0.08)",
+  border:    "rgba(24,21,17,0.06)",
+  shadow:    "0 2px 8px rgba(24,21,17,0.04)",
+  shadowMd:  "0 4px 20px rgba(24,21,17,0.06)",
+  shadowLg:  "0 8px 40px rgba(24,21,17,0.08)",
+  sans:      "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
+  mono:      "'DM Mono', 'SF Mono', monospace",
+  r:         "12px",
+  rLg:       "16px",
+  rFull:     "999px",
+  ease:      "cubic-bezier(0.22, 1, 0.36, 1)",
+  easeOut:   "cubic-bezier(0.16, 1, 0.3, 1)",
 };
 
 /* ─── Per-card tints ─── */
@@ -337,18 +341,6 @@ function TimeDisplay({ time, dur }: { time: string; dur: number }) {
   );
 }
 
-function Tip({ text }: { text: string }) {
-  return (
-    <div style={{ background: T.accentSoft, borderRadius: T.r, padding: "16px 18px", border: `1px solid ${T.accentMid}` }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-        <span style={{ color: T.accent }}>{Icon.bulb}</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.accent }}>Tip</span>
-      </div>
-      <p style={{ fontSize: 14, lineHeight: 1.65, color: "#5C4E1F" }}>{text}</p>
-    </div>
-  );
-}
-
 function CarryList({ items }: { items: string[] }) {
   const [ck, setCk] = useState<Record<number, boolean>>({});
   if (!items.length) return null;
@@ -455,7 +447,6 @@ function ScreenNow({ card, onDone, onSkip, onImageTap }: { card: V8Card; onDone:
       <div className="s2"><HeroCard slug={card.slug} phase={card.phase} title={card.title} sub={card.sub} onTap={onImageTap} /></div>
       {card.phase && <div className="s3"><PhaseBar currentPhase={card.phase} /></div>}
       <div className={card.phase ? "s4" : "s3"}><TimeDisplay time={card.time} dur={card.dur} /></div>
-      <div className={card.phase ? "s5" : "s4"}><Tip text={card.tip} /></div>
       {(() => { const ti = TINTS[card.slug as keyof typeof TINTS]; return ti?.maps ? (
         <div className={card.phase ? "s5b" : "s4b"}>
           <a href={ti.maps} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: T.rFull, background: T.accentSoft, border: `1px solid ${T.accentMid}`, color: T.accent, fontSize: 13, fontWeight: 600, textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
@@ -526,7 +517,6 @@ function ScreenPlan({ cards, currentIdx, onImageTap }: { cards: V8Card[]; curren
                       {isExp && (
                         <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${T.border}`, animation: "slideIn .2s ease both" }}>
                           <p style={{ fontSize: 13, color: T.secondary, lineHeight: 1.65, marginBottom: 12 }}>{card.sub}</p>
-                          <Tip text={card.tip} />
                           {card.carry.length > 0 && <p style={{ marginTop: 10, fontSize: 13, color: T.secondary }}><b style={{ fontWeight: 600 }}>Carry:</b> {card.carry.join(" · ")}</p>}
                           {(() => { const ti = TINTS[card.slug as keyof typeof TINTS]; return ti?.maps ? (
                             <a href={ti.maps} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "7px 14px", borderRadius: T.rFull, background: T.accentSoft, border: `1px solid ${T.accentMid}`, color: T.accent, fontSize: 12, fontWeight: 600, textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
@@ -746,29 +736,79 @@ export default function App() {
     <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: T.bg, fontFamily: T.sans }}>
       <style>{CSS}</style>
 
-      <div style={{ position: "sticky", top: 0, zIndex: 10, background: "rgba(250,250,248,0.88)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: `0.5px solid rgba(0,0,0,0.06)`, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: T.tertiary, marginBottom: 2, display: "flex", alignItems: "center", gap: 8 }}>
-            Rameshwaram Yatra
-            <button onClick={toggleLang} style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: T.rFull, border: `1.5px solid ${T.border}`, background: T.surface, color: T.secondary, cursor: "pointer", fontFamily: T.sans, letterSpacing: "0.02em", textTransform: "none" }}>{lang === "en" ? "हि" : "EN"}</button>
+      <header style={{
+        position: "sticky", top: 0, zIndex: 10,
+        background: T.bg,
+        padding: "20px 24px 24px",
+      }}>
+        {/* Top row: brand + utilities */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              overflow: "hidden", flexShrink: 0,
+              background: T.wash,
+            }}>
+              <img src="/icon-192.png" alt="" width={36} height={36} style={{ objectFit: "cover" }} />
+            </div>
+            <span style={{
+              fontSize: 15, fontWeight: 600, color: T.text,
+              letterSpacing: "-0.01em", fontFamily: T.sans,
+            }}>
+              Rameshwaram Yatra
+            </span>
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: T.text, letterSpacing: "-0.02em" }}>
-            {tab === "now" ? "Now" : tab === "plan" ? "Plan" : tab === "info" ? "Info" : "Car & Route"}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button
+              onClick={toggleLang}
+              aria-label="Toggle language"
+              style={{
+                width: 36, height: 36, borderRadius: 10,
+                border: "none", background: T.wash,
+                color: T.secondary, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", fontFamily: T.sans,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              {lang === "en" ? "हि" : "EN"}
+            </button>
+            {tab === "route" ? (
+              <div style={{
+                fontSize: 11, fontWeight: 600, color: T.accent,
+                fontFamily: T.mono, fontVariantNumeric: "tabular-nums",
+                padding: "8px 12px", borderRadius: 10,
+                background: T.accentSoft,
+              }}>
+                552 km · ~10 hrs
+              </div>
+            ) : (
+              <div style={{
+                fontSize: 11, fontWeight: 600, fontVariantNumeric: "tabular-nums",
+                color: allDone ? T.done : T.tertiary,
+                padding: "8px 12px", borderRadius: 10,
+                background: allDone ? T.doneSoft : T.wash,
+              }}>
+                {allDone ? "Done" : `${idx + 1}/${cards.length}`}
+              </div>
+            )}
           </div>
         </div>
-        {tab === "route" ? (
-          <div style={{ fontSize: 11, fontWeight: 600, color: T.accent, background: T.accentSoft, border: `1px solid ${T.accentMid}`, padding: "5px 14px", borderRadius: 100, fontFamily: "'DM Mono', monospace" }}>552 km · ~10 hrs</div>
-        ) : (
-          <span style={{ fontSize: 11, fontWeight: 600, color: allDone ? T.done : T.secondary, fontVariantNumeric: "tabular-nums", background: allDone ? T.doneSoft : T.wash, padding: "5px 12px", borderRadius: T.rFull }}>{allDone ? "✓ Done" : `${idx + 1} / ${cards.length}`}</span>
-        )}
-      </div>
+        {/* Section title — hero */}
+        <h1 style={{
+          fontSize: 32, fontWeight: 700, color: T.text,
+          letterSpacing: "-0.04em", lineHeight: 1.1,
+          margin: 0, fontFamily: T.sans,
+        }}>
+          {tab === "now" ? "Now" : tab === "plan" ? "Plan" : tab === "info" ? "Info" : "Car & Route"}
+        </h1>
+      </header>
 
       {loading && !steps.length ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 20px" }}>
           <span style={{ fontSize: 13, color: T.tertiary }}>Loading...</span>
         </div>
       ) : (
-        <div key={`${tab}-${morphKey}`} style={{ paddingBottom: 90 }}>
+        <div key={`${tab}-${morphKey}`} style={{ paddingBottom: 100 }}>
           {tab === "now" && !allDone && <ScreenNow card={card} onDone={() => advance("done")} onSkip={() => advance("skipped")} onImageTap={(src, label) => setLightbox({ src, label })} />}
           {tab === "now" && allDone && (
             <div style={{ padding: "60px 20px", textAlign: "center" as const }}>
@@ -786,18 +826,34 @@ export default function App() {
       {/* Lightbox */}
       {lightbox && <ImageLightbox src={lightbox.src} label={lightbox.label} onClose={() => setLightbox(null)} />}
 
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "rgba(250,250,248,0.72)", backdropFilter: "blur(40px) saturate(180%)", WebkitBackdropFilter: "blur(40px) saturate(180%)", borderTop: `0.5px solid rgba(0,0,0,0.08)`, display: "flex", justifyContent: "space-around", padding: "4px 0 max(8px, env(safe-area-inset-bottom))", zIndex: 20 }}>
-        <div style={{ position: "absolute", top: 4, left: `${(activeIdx / tabs.length) * 100 + (100 / tabs.length / 2) - 10.5}%`, width: "21%", height: "calc(100% - 4px - max(8px, env(safe-area-inset-bottom)))", background: T.accentSoft, borderRadius: 14, transition: `left .4s ${T.ease}`, zIndex: 0 }} />
+      <nav style={{
+        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+        width: "100%", maxWidth: 430, zIndex: 20,
+        background: T.bg,
+        borderTop: `1px solid ${T.border}`,
+        display: "flex", justifyContent: "space-around",
+        padding: "10px 0 max(14px, env(safe-area-inset-bottom))",
+      }}>
         {tabs.map(t => {
           const active = tab === t.id;
           return (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, padding: "10px 20px", border: "none", background: "transparent", cursor: "pointer", color: active ? T.accent : T.tertiary, transition: `color .2s ${T.ease}`, position: "relative", zIndex: 1 }}>
-              <div style={{ transition: `transform .2s ${T.ease}`, transform: active ? "scale(1.05)" : "scale(1)" }}>{t.icon}</div>
-              <span style={{ fontSize: 10, fontWeight: active ? 600 : 500, letterSpacing: "0.02em" }}>{t.label}</span>
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                padding: "8px 4px", border: "none", background: "transparent",
+                cursor: "pointer", minWidth: 0,
+                color: active ? T.accent : T.tertiary,
+                transition: `color .2s ${T.ease}`,
+              }}
+            >
+              <div style={{ opacity: active ? 1 : 0.6 }}>{t.icon}</div>
+              <span style={{ fontSize: 11, fontWeight: active ? 600 : 500 }}>{t.label}</span>
             </button>
           );
         })}
-      </div>
+      </nav>
     </div>
   );
 }
