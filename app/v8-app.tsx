@@ -741,24 +741,15 @@ export default function App() {
         background: T.bg,
         padding: "20px 24px 24px",
       }}>
-        {/* Top row: brand + utilities */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              overflow: "hidden", flexShrink: 0,
-              background: T.wash,
-            }}>
-              <img src="/icon-192.png" alt="" width={36} height={36} style={{ objectFit: "cover" }} />
-            </div>
-            <span style={{
-              fontSize: 15, fontWeight: 600, color: T.text,
-              letterSpacing: "-0.01em", fontFamily: T.sans,
-            }}>
-              Rameshwaram Yatra
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <h1 style={{
+            fontSize: 32, fontWeight: 700, color: T.text,
+            letterSpacing: "-0.04em", lineHeight: 1.1,
+            margin: 0, fontFamily: T.sans,
+          }}>
+            {tab === "now" ? "Now" : tab === "plan" ? "Plan" : tab === "info" ? "Info" : "Car & Route"}
+          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             <button
               onClick={toggleLang}
               aria-label="Toggle language"
@@ -793,14 +784,6 @@ export default function App() {
             )}
           </div>
         </div>
-        {/* Section title — hero */}
-        <h1 style={{
-          fontSize: 32, fontWeight: 700, color: T.text,
-          letterSpacing: "-0.04em", lineHeight: 1.1,
-          margin: 0, fontFamily: T.sans,
-        }}>
-          {tab === "now" ? "Now" : tab === "plan" ? "Plan" : tab === "info" ? "Info" : "Car & Route"}
-        </h1>
       </header>
 
       {loading && !steps.length ? (
