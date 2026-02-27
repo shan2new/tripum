@@ -437,7 +437,7 @@ function ScreenNow({ card, onDone, onSkip, onImageTap }: { card: V8Card; onDone:
   const handleDone = () => { setDone(true); setTimeout(() => { setDone(false); onDone(); }, 500); };
 
   return (
-    <div key={card.slug} style={{ padding: "0 20px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
+    <div key={card.slug} style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
       <div className="s1" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.accent }}>Day {card.day}</span>
         <span style={{ fontSize: 11, color: T.tertiary, fontWeight: 500 }}>{card.dayLabel}</span>
@@ -474,7 +474,7 @@ function ScreenPlan({ cards, currentIdx, onImageTap }: { cards: V8Card[]; curren
   const [exp, setExp] = useState<string | null>(null);
   const days: [number, string, string][] = [[0, "Feb 28", "Arrival"], [1, "Mar 1", "Core Darshan"], [2, "Mar 2", "Return"]];
   return (
-    <div style={{ padding: "0 20px 24px" }}>
+    <div style={{ padding: "0 24px 24px" }}>
       {days.map(([dn, dt, lb]) => {
         const dc = cards.filter(c => c.day === dn);
         const doneCount = dc.filter(c => cards.indexOf(c) < currentIdx).length;
@@ -543,7 +543,7 @@ function ScreenInfo({ packing }: { packing: { isChecked: (k: string, i: number) 
   const fmt = (n: number) => "₹" + n.toLocaleString("en-IN");
 
   return (
-    <div style={{ padding: "0 20px 24px" }}>
+    <div style={{ padding: "0 24px 24px" }}>
       <p className="s1" style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 16 }}>Reference</p>
 
       {/* ─── CASH BUDGET ─── */}
@@ -776,7 +776,7 @@ export default function App() {
               <div style={{
                 fontSize: 11, fontWeight: 600, color: T.accent,
                 fontFamily: T.mono, fontVariantNumeric: "tabular-nums",
-                padding: "8px 12px", borderRadius: 10,
+                padding: "6px 12px", borderRadius: 10,
                 background: T.accentSoft,
               }}>
                 552 km · ~10 hrs
@@ -785,7 +785,7 @@ export default function App() {
               <div style={{
                 fontSize: 11, fontWeight: 600, fontVariantNumeric: "tabular-nums",
                 color: allDone ? T.done : T.tertiary,
-                padding: "8px 12px", borderRadius: 10,
+                padding: "6px 12px", borderRadius: 10,
                 background: allDone ? T.doneSoft : T.wash,
               }}>
                 {allDone ? "Done" : `${idx + 1}/${cards.length}`}
@@ -804,14 +804,14 @@ export default function App() {
       </header>
 
       {loading && !steps.length ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 24px" }}>
           <span style={{ fontSize: 13, color: T.tertiary }}>Loading...</span>
         </div>
       ) : (
         <div key={`${tab}-${morphKey}`} style={{ paddingBottom: 100 }}>
           {tab === "now" && !allDone && <ScreenNow card={card} onDone={() => advance("done")} onSkip={() => advance("skipped")} onImageTap={(src, label) => setLightbox({ src, label })} />}
           {tab === "now" && allDone && (
-            <div style={{ padding: "60px 20px", textAlign: "center" as const }}>
+            <div style={{ padding: "60px 24px", textAlign: "center" as const }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🙏</div>
               <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Yatra Complete</h2>
               <p style={{ fontSize: 14, color: T.secondary, lineHeight: 1.6 }}>All steps done. Har Har Mahadev!</p>
