@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouteProgress } from "@/hooks/use-route-progress";
 import { computeAdjustedRouteTimes, formatTime, type AdjustedTime } from "@/lib/schedule";
 
@@ -35,21 +35,165 @@ const T = {
 const DEFAULT_START = 510; // 8:30 AM in minutes from midnight
 
 const phases = [
-  { type: "stop", fn: "Chiku Drop-off", name: "Pet boarding / sitter", time: "8:30 AM", durationMin: 30, note: "Share vet contact · Print feeding schedule · Pack 3 days food", img: "/images/home.jpg" },
-  { type: "drive", from: "Bengaluru", to: "Salem", distance: "200 km", time: "9:00 AM – 12:00 PM", durationMin: 180, highway: "NH 44" },
-  { type: "stop", fn: "Breakfast", name: "A2B, Thoppur · Salem", time: "12:00 – 1:00 PM", durationMin: 60, note: "SUV parking · Clean restrooms", img: "/images/a2b_salem.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=Adyar+Ananda+Bhavan+-+A2B&query_place_id=ChIJk74wW78arDsRNzIOQHUwMQc" },
-  { type: "drive", from: "Salem", to: "Madurai", distance: "160 km", time: "1:00 – 4:00 PM", durationMin: 180, highway: "NH 44 → NH 87" },
-  { type: "stop", fn: "Lunch", name: "Gowri Krishna Veg · Madurai Bypass", time: "4:00 – 5:00 PM", durationMin: 45, note: "On bypass — avoids city traffic", img: "/images/gowri_krishna_veg.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Gowri+Krishna-+Veg+Restaurant&query_place_id=ChIJ0e2cBp3PADsRGgSJVWsxwIg" },
-  { type: "stop", fn: "Major Refuel", name: "IndianOil SWAGAT COCO · Madurai", time: "~4:45 PM", durationMin: 15, note: "XP95 available · Fill 100% — sparse stations ahead", critical: true, maps: "https://www.google.com/maps/search/?api=1&query=IndianOil+-+SWAGAT&query_place_id=ChIJ-2HjLkXBADsRhWXOEE6_scs" },
-  { type: "drive", from: "Madurai", to: "Rameshwaram", distance: "192 km", time: "5:00 – 8:30 PM", durationMin: 150, highway: "NH 87" },
-  { type: "stop", fn: "Tea", name: "Chaya Kada · Ramanathapuram", time: "~7:30 PM", durationMin: 90, note: "20 min before final stretch", img: "/images/chaya_kada.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=CHAYA+KADA&query_place_id=ChIJ2W0mIAebATsR1d6E6dikzso" },
-  { type: "arrival", name: "Rameshwaram", time: "~9:00 PM", durationMin: 0, note: "Via Pamban Bridge · Late arrival — head straight to hotel", img: "/images/temple.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Pamban+Bridge&query_place_id=ChIJNRza64bvATsRL3U2O5svnYg" },
+  { type: "stop", fn: "Chiku Drop-off", name: "Pet boarding / sitter", time: "8:30 AM", durationMin: 30, note: "Share vet contact · Print feeding schedule · Pack 3 days food", img: "/images/home.jpg", lat: 12.9716, lon: 77.5946, place: "Bengaluru" },
+  { type: "drive", from: "Bengaluru", to: "Salem", distance: "200 km", time: "9:00 AM – 12:00 PM", durationMin: 180, highway: "NH 44", lat: 11.6643, lon: 78.1460, place: "Salem" },
+  { type: "stop", fn: "Breakfast", name: "A2B, Thoppur · Salem", time: "12:00 – 1:00 PM", durationMin: 60, note: "SUV parking · Clean restrooms", img: "/images/a2b_salem.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=Adyar+Ananda+Bhavan+-+A2B&query_place_id=ChIJk74wW78arDsRNzIOQHUwMQc", lat: 11.6643, lon: 78.1460, place: "Salem" },
+  { type: "drive", from: "Salem", to: "Madurai", distance: "160 km", time: "1:00 – 4:00 PM", durationMin: 180, highway: "NH 44 → NH 87", lat: 9.9252, lon: 78.1198, place: "Madurai" },
+  { type: "stop", fn: "Lunch", name: "Gowri Krishna Veg · Madurai Bypass", time: "4:00 – 5:00 PM", durationMin: 45, note: "On bypass — avoids city traffic", img: "/images/gowri_krishna_veg.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Gowri+Krishna-+Veg+Restaurant&query_place_id=ChIJ0e2cBp3PADsRGgSJVWsxwIg", lat: 9.9252, lon: 78.1198, place: "Madurai" },
+  { type: "stop", fn: "Major Refuel", name: "IndianOil SWAGAT COCO · Madurai", time: "~4:45 PM", durationMin: 15, note: "XP95 available · Fill 100% — sparse stations ahead", critical: true, maps: "https://www.google.com/maps/search/?api=1&query=IndianOil+-+SWAGAT&query_place_id=ChIJ-2HjLkXBADsRhWXOEE6_scs", lat: 9.9252, lon: 78.1198, place: "Madurai" },
+  { type: "drive", from: "Madurai", to: "Rameshwaram", distance: "192 km", time: "5:00 – 8:30 PM", durationMin: 150, highway: "NH 87", lat: 9.2876, lon: 79.3129, place: "Rameshwaram" },
+  { type: "stop", fn: "Tea", name: "Chaya Kada · Ramanathapuram", time: "~7:30 PM", durationMin: 90, note: "20 min before final stretch", img: "/images/chaya_kada.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=CHAYA+KADA&query_place_id=ChIJ2W0mIAebATsR1d6E6dikzso", lat: 9.3639, lon: 78.8395, place: "Ramanathapuram" },
+  { type: "arrival", name: "Rameshwaram", time: "~9:00 PM", durationMin: 0, note: "Via Pamban Bridge · Late arrival — head straight to hotel", img: "/images/temple.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Pamban+Bridge&query_place_id=ChIJNRza64bvATsRL3U2O5svnYg", lat: 9.2876, lon: 79.3129, place: "Rameshwaram" },
 ] as const;
 
 const PHASE_DURATIONS = phases.map(p => p.durationMin);
 const PHASE_IS_RANGE = phases.map(p => p.time.includes("–"));
 
 type Phase = (typeof phases)[number];
+
+/* ─── Compact Weather Types ─── */
+interface CompactWeather {
+  temp: number;
+  code: number;
+  wind: number;
+  hi: number;
+  lo: number;
+}
+
+function weatherLabel(code: number): string {
+  if (code === 0) return "Clear";
+  if (code <= 3) return "Partly cloudy";
+  if (code <= 48) return "Foggy";
+  if (code <= 57) return "Drizzle";
+  if (code <= 67) return "Rain";
+  if (code <= 77) return "Snow";
+  if (code <= 82) return "Showers";
+  if (code <= 86) return "Snow";
+  if (code === 95 || code === 96 || code === 99) return "Thunderstorm";
+  return "Cloudy";
+}
+
+function weatherConditionIcon(code: number): string {
+  if (code === 0) return "☀";
+  if (code <= 3) return "⛅";
+  if (code <= 48) return "🌫";
+  if (code <= 57) return "🌦";
+  if (code <= 67) return "🌧";
+  if (code <= 77) return "❄";
+  if (code <= 86) return "🌨";
+  if (code === 95 || code === 96 || code === 99) return "⛈";
+  return "☁";
+}
+
+/* ─── Weather Cache + Fetcher ─── */
+const weatherCache: Record<string, CompactWeather> = {};
+
+function usePlaceWeather(lat: number, lon: number, enabled: boolean) {
+  const key = `${lat},${lon}`;
+  const [data, setData] = useState<CompactWeather | null>(weatherCache[key] ?? null);
+  const [loading, setLoading] = useState(!weatherCache[key] && enabled);
+
+  useEffect(() => {
+    if (!enabled) return;
+    if (weatherCache[key]) { setData(weatherCache[key]); setLoading(false); return; }
+
+    let cancelled = false;
+    setLoading(true);
+    fetch(`/api/weather?lat=${lat}&lon=${lon}&compact=1`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => {
+        if (cancelled) return;
+        const w: CompactWeather = {
+          temp: Math.round(d.current.temperature_2m),
+          code: d.current.weather_code,
+          wind: Math.round(d.current.wind_speed_10m),
+          hi: Math.round(d.daily.temperature_2m_max[0]),
+          lo: Math.round(d.daily.temperature_2m_min[0]),
+        };
+        weatherCache[key] = w;
+        setData(w);
+        setLoading(false);
+      })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [lat, lon, key, enabled]);
+
+  return { data, loading };
+}
+
+/* ─── Inline Weather Strip (minimalist) ─── */
+function PlaceWeather({ lat, lon, place, enabled }: { lat: number; lon: number; place: string; enabled: boolean }) {
+  const { data, loading } = usePlaceWeather(lat, lon, enabled);
+
+  if (!enabled) return null;
+
+  if (loading) {
+    return (
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "10px 0 2px",
+      }}>
+        <div style={{
+          width: 10, height: 10, borderRadius: "50%",
+          border: `1.5px solid ${T.sunken}`,
+          borderTopColor: T.tertiary,
+          animation: "spin 0.8s linear infinite",
+        }} />
+        <span style={{ fontSize: 11, color: T.tertiary, fontFamily: T.sans }}>
+          Loading weather...
+        </span>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 14,
+      padding: "12px 14px",
+      marginTop: 10,
+      background: T.wash,
+      borderRadius: 10,
+      animation: "slideIn .25s ease both",
+    }}>
+      {/* Icon + Temp */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 18, lineHeight: 1 }}>
+          {weatherConditionIcon(data.code)}
+        </span>
+        <span style={{
+          fontSize: 20, fontWeight: 300, color: T.text,
+          letterSpacing: "-0.03em", lineHeight: 1,
+          fontVariantNumeric: "tabular-nums",
+        }}>
+          {data.temp}°
+        </span>
+      </div>
+
+      {/* Divider */}
+      <div style={{ width: 1, height: 20, background: T.sunken }} />
+
+      {/* Details */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          fontSize: 11, fontWeight: 500, color: T.secondary,
+          letterSpacing: "-0.01em", lineHeight: 1.3,
+        }}>
+          {weatherLabel(data.code)} · {place}
+        </p>
+        <p style={{
+          fontSize: 10, color: T.tertiary, marginTop: 2,
+          fontVariantNumeric: "tabular-nums",
+          fontFamily: T.mono,
+        }}>
+          H:{data.hi}°  L:{data.lo}°  Wind {data.wind} km/h
+        </p>
+      </div>
+    </div>
+  );
+}
 
 /* ─── Page Component ─── */
 export default function CarRoutePage() {
@@ -201,7 +345,7 @@ export default function CarRoutePage() {
             const hasImg = "img" in p;
             const hasNote = "note" in p;
             const hasMaps = "maps" in p;
-            const expandable = hasNote || hasMaps;
+            const expandable = true; // all cards expand for weather
 
             // Card title
             const title = "from" in p ? `${p.from} → ${p.to}` : "fn" in p ? p.fn : p.name;
@@ -345,6 +489,7 @@ export default function CarRoutePage() {
                           {(p as unknown as Record<string, string>).note}
                         </p>
                       )}
+                      <PlaceWeather lat={p.lat} lon={p.lon} place={p.place} enabled={isExp} />
                       {hasMaps && <MapPill url={(p as unknown as Record<string, string>).maps} />}
                     </div>
                   )}
