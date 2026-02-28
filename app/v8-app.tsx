@@ -6,6 +6,7 @@ import { CARDS as LIB_CARDS } from "@/lib/cards";
 import { useLanguage } from "@/hooks/use-language";
 import { usePacking } from "@/hooks/use-packing";
 import CarRoutePage from "./car-route";
+import WeatherWidget from "@/components/weather-widget";
 import type { StepCard, BilingualText } from "@/lib/types";
 
 // ═══════════════════════════════════════════════════════════════
@@ -444,19 +445,20 @@ function ScreenNow({ card, onDone, onSkip, onImageTap }: { card: V8Card; onDone:
         <span style={{ fontSize: 11, color: T.tertiary }}>·</span>
         <span style={{ fontSize: 11, color: T.secondary }}>{card.dayTitle}</span>
       </div>
-      <div className="s2"><HeroCard slug={card.slug} phase={card.phase} title={card.title} sub={card.sub} onTap={onImageTap} /></div>
-      {card.phase && <div className="s3"><PhaseBar currentPhase={card.phase} /></div>}
-      <div className={card.phase ? "s4" : "s3"}><TimeDisplay time={card.time} dur={card.dur} /></div>
+      <div className="s2"><WeatherWidget /></div>
+      <div className="s3"><HeroCard slug={card.slug} phase={card.phase} title={card.title} sub={card.sub} onTap={onImageTap} /></div>
+      {card.phase && <div className="s4"><PhaseBar currentPhase={card.phase} /></div>}
+      <div className={card.phase ? "s5" : "s4"}><TimeDisplay time={card.time} dur={card.dur} /></div>
       {(() => { const ti = TINTS[card.slug as keyof typeof TINTS]; return ti?.maps ? (
-        <div className={card.phase ? "s5b" : "s4b"}>
+        <div className={card.phase ? "s6" : "s5"}>
           <a href={ti.maps} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: T.rFull, background: T.accentSoft, border: `1px solid ${T.accentMid}`, color: T.accent, fontSize: 13, fontWeight: 600, textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
             Open in Maps
           </a>
         </div>
       ) : null; })()}
-      {card.carry.length > 0 && <div className={card.phase ? "s6" : "s5"}><CarryList items={card.carry} /></div>}
-      <div className={card.phase ? "s6" : "s5"} style={{ display: "flex", gap: 10, marginTop: 2 }}>
+      {card.carry.length > 0 && <div className={card.phase ? "s7" : "s6"}><CarryList items={card.carry} /></div>}
+      <div className={card.phase ? "s7" : "s6"} style={{ display: "flex", gap: 10, marginTop: 2 }}>
         {card.skip && (
           <button className="press" onClick={onSkip} style={{ flex: "0 0 auto", padding: "16px 22px", borderRadius: T.r, border: `1.5px solid ${T.border}`, background: "transparent", color: T.secondary, fontSize: 14, fontWeight: 500, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>{Icon.skip} Skip</button>
         )}
@@ -464,7 +466,7 @@ function ScreenNow({ card, onDone, onSkip, onImageTap }: { card: V8Card; onDone:
           {done ? <><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> Done</> : <>{Icon.check} Mark Complete</>}
         </button>
       </div>
-      <div className={card.phase ? "s7" : "s6"}><NextPeek title={card.next} time={card.nextTime} slug={nextSlug} /></div>
+      <div className={card.phase ? "s8" : "s7"}><NextPeek title={card.next} time={card.nextTime} slug={nextSlug} /></div>
     </div>
   );
 }
