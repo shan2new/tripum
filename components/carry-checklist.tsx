@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { BilingualText } from "@/lib/types";
+import { SECTION } from "@/lib/strings";
 
 interface CarryChecklistProps {
   items: BilingualText[];
@@ -35,7 +36,7 @@ export function CarryChecklist({ items }: CarryChecklistProps) {
           letterSpacing: "0.1em", textTransform: "uppercase",
           color: "var(--yatra-text-faint)",
         }}>
-          Carry
+          {t(SECTION.carry)}
         </span>
       </div>
       {items.map((item, i) => (

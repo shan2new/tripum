@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/hooks/use-language";
 import { StepViewModel } from "@/lib/types";
+import { SECTION } from "@/lib/strings";
 import { MiniThumb } from "./mini-thumb";
 
 interface NextStepPeekProps {
@@ -30,7 +31,7 @@ export function NextStepPeek({ nextStep }: NextStepPeekProps) {
           color: "var(--yatra-text-faint)",
           marginBottom: "2px",
         }}>
-          Up next
+          {t(SECTION.upNext)}
         </p>
         <p style={{
           fontSize: "14px", fontWeight: 500,

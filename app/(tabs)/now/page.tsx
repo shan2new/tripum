@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useTripData, type V8Card } from "@/hooks/use-trip-data";
+import { useLanguage } from "@/hooks/use-language";
 import WeatherWidget from "@/components/weather-widget";
 import { T, TINTS, PHASE_STEPS, DAY_MILESTONES, CSS } from "@/lib/design-tokens";
+import { ACTION, SECTION, STATUS } from "@/lib/strings";
 import type { AdjustedTime } from "@/lib/schedule";
 
 /* ─── Icons ─── */
@@ -16,25 +18,25 @@ const Icon = {
 
 /* ─── Sub-components ─── */
 function Swatch({ slug, size = 44, radius = 14, onTap }: { slug: string; size?: number; radius?: number; onTap?: (src: string, label: string) => void }) {
-  const t = TINTS[slug as keyof typeof TINTS] || TINTS["check-in"];
+  const tint = TINTS[slug as keyof typeof TINTS] || TINTS["check-in"];
   return (
     <div
-      onClick={onTap ? (e) => { e.stopPropagation(); onTap(t.img, slug); } : undefined}
-      style={{ width: size, height: size, borderRadius: radius, flexShrink: 0, overflow: "hidden", background: `linear-gradient(145deg, ${t.tint}, ${t.tint}cc)`, cursor: onTap ? "pointer" : undefined }}
+      onClick={onTap ? (e) => { e.stopPropagation(); onTap(tint.img, slug); } : undefined}
+      style={{ width: size, height: size, borderRadius: radius, flexShrink: 0, overflow: "hidden", background: `linear-gradient(145deg, ${tint.tint}, ${tint.tint}cc)`, cursor: onTap ? "pointer" : undefined }}
     >
-      <img src={t.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      <img src={tint.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
     </div>
   );
 }
 
-function HeroCard({ slug, phase, title, sub, onTap }: { slug: string; phase: number | null; title: string; sub: string; onTap?: (src: string, label: string) => void }) {
-  const t = TINTS[slug as keyof typeof TINTS] || TINTS["check-in"];
+function HeroCard({ slug, phase, title, sub, phaseLabel, onTap }: { slug: string; phase: number | null; title: string; sub: string; phaseLabel?: string; onTap?: (src: string, label: string) => void }) {
+  const tint = TINTS[slug as keyof typeof TINTS] || TINTS["check-in"];
   return (
-    <div onClick={onTap ? () => onTap(t.img, title) : undefined} style={{ position: "relative", borderRadius: 16, overflow: "hidden", aspectRatio: "16/9", boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.08)", background: t.tint, cursor: onTap ? "pointer" : undefined }}>
-      <img src={t.img} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+    <div onClick={onTap ? () => onTap(tint.img, title) : undefined} style={{ position: "relative", borderRadius: 16, overflow: "hidden", aspectRatio: "16/9", boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.08)", background: tint.tint, cursor: onTap ? "pointer" : undefined }}>
+      <img src={tint.img} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%)" }} />
       {phase && (
-        <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(255,255,255,0.16)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", padding: "5px 14px", borderRadius: T.rFull }}>Phase {phase} of 3</div>
+        <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(255,255,255,0.16)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", padding: "5px 14px", borderRadius: T.rFull }}>{phaseLabel}</div>
       )}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 24px 24px" }}>
         <h2 style={{ fontSize: 26, fontWeight: 700, color: "white", lineHeight: 1.14, letterSpacing: "-0.022em", marginBottom: 4 }}>{title}</h2>
@@ -44,7 +46,7 @@ function HeroCard({ slug, phase, title, sub, onTap }: { slug: string; phase: num
   );
 }
 
-function PhaseBar({ currentPhase }: { currentPhase: number }) {
+function PhaseBar({ currentPhase, translate }: { currentPhase: number; translate: (bi: { en: string; hi: string }) => string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", padding: "16px 20px", borderRadius: T.r, background: T.surface, border: `0.5px solid ${T.border}` }}>
       {PHASE_STEPS.map((step, i) => {
@@ -56,7 +58,7 @@ function PhaseBar({ currentPhase }: { currentPhase: number }) {
                 {done && <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
                 {active && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />}
               </div>
-              <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.01em", color: done ? T.done : active ? T.accent : T.tertiary }}>{step}</span>
+              <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.01em", color: done ? T.done : active ? T.accent : T.tertiary }}>{translate(step)}</span>
             </div>
             {i < PHASE_STEPS.length - 1 && <div style={{ flex: 1, height: 1, margin: "0 8px", marginBottom: 20, background: done ? T.done : T.sunken, borderRadius: 0.5, transition: `background .25s ${T.ease}`, opacity: done ? 1 : 0.5 }} />}
           </div>
@@ -86,14 +88,14 @@ function TimeDisplay({ time, dur, shifted, delta }: { time: string; dur: number;
   );
 }
 
-function CarryList({ items }: { items: string[] }) {
+function CarryList({ items, carryLabel }: { items: string[]; carryLabel: string }) {
   const [ck, setCk] = useState<Record<number, boolean>>({});
   if (!items.length) return null;
   return (
     <div style={{ background: T.surface, border: `0.5px solid ${T.border}`, borderRadius: T.r, padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
         <span style={{ color: T.tertiary }}>{Icon.bag}</span>
-        <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary }}>Carry</span>
+        <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary }}>{carryLabel}</span>
       </div>
       {items.map((item, i) => (
         <div key={i} onClick={() => setCk(p => ({ ...p, [i]: !p[i] }))} style={{ display: "flex", alignItems: "center", gap: 12, padding: "7px 0", cursor: "pointer", userSelect: "none" }}>
@@ -107,13 +109,13 @@ function CarryList({ items }: { items: string[] }) {
   );
 }
 
-function NextPeek({ title, time, slug }: { title: string | null; time: string | null; slug: string | null }) {
+function NextPeek({ title, time, slug, upNextLabel }: { title: string | null; time: string | null; slug: string | null; upNextLabel: string }) {
   if (!title) return null;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: T.r, background: T.surface, border: `0.5px solid ${T.border}` }}>
       <Swatch slug={slug || "check-in"} size={44} radius={12} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary, marginBottom: 2 }}>Up next</p>
+        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary, marginBottom: 2 }}>{upNextLabel}</p>
         <p style={{ fontSize: 15, fontWeight: 500, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: "-0.01em" }}>{title}</p>
       </div>
       <span style={{ fontSize: 13, color: T.secondary, fontVariantNumeric: "tabular-nums", flexShrink: 0, letterSpacing: "-0.01em" }}>{time}</span>
@@ -124,11 +126,12 @@ function NextPeek({ title, time, slug }: { title: string | null; time: string | 
 /* ─── Page ─── */
 export default function NowPage() {
   const { card, allDone, adjustedTimes, loading, advance, setLightbox } = useTripData();
+  const { t, lang } = useLanguage();
 
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 24px" }}>
-        <span style={{ fontSize: 13, color: T.tertiary }}>Loading...</span>
+        <span style={{ fontSize: 13, color: T.tertiary }}>{t(STATUS.loading)}</span>
       </div>
     );
   }
@@ -138,14 +141,13 @@ export default function NowPage() {
       <div style={{ padding: "80px 24px", textAlign: "center" as const }}>
         <style>{CSS}</style>
         <div style={{ fontSize: 52, marginBottom: 20 }}>🙏</div>
-        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>Yatra Complete</h2>
-        <p style={{ fontSize: 15, color: T.secondary, lineHeight: 1.6, fontWeight: 400 }}>All steps done. Har Har Mahadev!</p>
+        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>{t(STATUS.yatraComplete)}</h2>
+        <p style={{ fontSize: 15, color: T.secondary, lineHeight: 1.6, fontWeight: 400 }}>{t(STATUS.yatraCompleteMsg)}</p>
       </div>
     );
   }
 
   const adjusted = adjustedTimes[card.slug];
-  const displayTime = adjusted?.shifted ? adjusted.time : card.time;
   const onImageTap = (src: string, label: string) => setLightbox({ src, label });
 
   return (
@@ -158,39 +160,43 @@ export default function NowPage() {
 
 function ScreenNow({ card, adjusted, onDone, onSkip, onImageTap }: { card: V8Card; adjusted?: AdjustedTime; onDone: () => void; onSkip: () => void; onImageTap: (src: string, label: string) => void }) {
   const [done, setDone] = useState(false);
+  const { t, lang } = useLanguage();
   const displayTime = adjusted?.shifted ? adjusted.time : card.time;
   const handleDone = () => { setDone(true); setTimeout(() => { setDone(false); onDone(); }, 500); };
+
+  const dayWord = lang === "hi" ? "दिन" : "Day";
+  const phaseLabel = card.phase ? (lang === "hi" ? `चरण ${card.phase} / 3` : `Phase ${card.phase} of 3`) : undefined;
 
   return (
     <div key={card.slug} style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
       <div className="s1" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: T.accent }}>Day {card.day}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: T.accent }}>{dayWord} {card.day}</span>
         <span style={{ fontSize: 12, color: T.tertiary, fontWeight: 400 }}>{card.dayLabel}</span>
         <span style={{ fontSize: 12, color: T.tertiary, opacity: 0.5 }}>·</span>
         <span style={{ fontSize: 12, color: T.secondary, fontWeight: 400 }}>{card.dayTitle}</span>
       </div>
       <div className="s2"><WeatherWidget /></div>
-      <div className="s3"><HeroCard slug={card.slug} phase={card.phase} title={card.title} sub={card.sub} onTap={onImageTap} /></div>
-      {card.phase && <div className="s4"><PhaseBar currentPhase={card.phase} /></div>}
+      <div className="s3"><HeroCard slug={card.slug} phase={card.phase} title={card.title} sub={card.sub} phaseLabel={phaseLabel} onTap={onImageTap} /></div>
+      {card.phase && <div className="s4"><PhaseBar currentPhase={card.phase} translate={t} /></div>}
       <div className={card.phase ? "s5" : "s4"}><TimeDisplay time={displayTime} dur={card.dur} shifted={adjusted?.shifted} delta={adjusted?.delta} /></div>
       {(() => { const ti = TINTS[card.slug as keyof typeof TINTS]; return ti?.maps ? (
         <div className={card.phase ? "s6" : "s5"}>
           <a href={ti.maps} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: T.rFull, background: T.accentSoft, border: `1px solid ${T.accentMid}`, color: T.accent, fontSize: 13, fontWeight: 600, textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-            Open in Maps
+            {t(ACTION.openInMaps)}
           </a>
         </div>
       ) : null; })()}
-      {card.carry.length > 0 && <div className={card.phase ? "s7" : "s6"}><CarryList items={card.carry} /></div>}
+      {card.carry.length > 0 && <div className={card.phase ? "s7" : "s6"}><CarryList items={card.carry} carryLabel={t(SECTION.carry)} /></div>}
       <div className={card.phase ? "s7" : "s6"} style={{ display: "flex", gap: 10, marginTop: 4 }}>
         {card.skip && (
-          <button className="press" onClick={onSkip} style={{ flex: "0 0 auto", padding: "16px 22px", borderRadius: T.r, border: `1px solid rgba(60,60,67,0.1)`, background: "transparent", color: T.secondary, fontSize: 15, fontWeight: 400, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>{Icon.skip} Skip</button>
+          <button className="press" onClick={onSkip} style={{ flex: "0 0 auto", padding: "16px 22px", borderRadius: T.r, border: `1px solid rgba(60,60,67,0.1)`, background: "transparent", color: T.secondary, fontSize: 15, fontWeight: 400, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>{Icon.skip} {t(ACTION.skip)}</button>
         )}
         <button className="press" onClick={handleDone} style={{ flex: 1, padding: "16px 24px", borderRadius: T.r, border: "none", background: done ? T.done : T.text, color: "white", fontSize: 16, fontWeight: 600, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: `background .2s ease`, letterSpacing: "-0.01em" }}>
-          {done ? <><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> Done</> : <>{Icon.check} Mark Complete</>}
+          {done ? <><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> {t(ACTION.done)}</> : <>{Icon.check} {t(ACTION.markComplete)}</>}
         </button>
       </div>
-      <div className={card.phase ? "s8" : "s7"}><NextPeek title={card.next} time={card.nextTime} slug={card.nextSlug} /></div>
+      <div className={card.phase ? "s8" : "s7"}><NextPeek title={card.next} time={card.nextTime} slug={card.nextSlug} upNextLabel={t(SECTION.upNext)} /></div>
     </div>
   );
 }

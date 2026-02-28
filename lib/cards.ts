@@ -15,7 +15,7 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/daiwik-hotel.svg",
     tip: {
       en: "Hotel is 2.5 km from Ramanathaswamy Temple. Auto ride ₹100.",
-      hi: "होटल मंदिर से 2.5 किमी दूर है। ऑटो ₹100।",
+      hi: "होटल रामनाथस्वामी मंदिर से 2.5 किमी दूर है। ऑटो का किराया ₹100।",
     },
     carry: [],
     skipAllowed: false,
@@ -28,10 +28,10 @@ export const CARDS: StepCard[] = [
     dayNumber: 0,
     dayDate: "2026-02-28",
     sortOrder: 2,
-    title: { en: "Evening Temple Visit", hi: "शाम मंदिर दर्शन" },
+    title: { en: "Evening Temple Visit", hi: "शाम को मंदिर भ्रमण" },
     subtitle: {
       en: "Corridor walk & orientation only — no bath today",
-      hi: "केवल गलियारे में चलना — आज स्नान नहीं",
+      hi: "सिर्फ़ गलियारा देखना और पहचान — आज स्नान नहीं",
     },
     timeWindow: "8:00 – 10:30 PM",
     durationMin: 150,
@@ -39,7 +39,7 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/ramanathaswamy-corridor.svg",
     tip: {
       en: "Just a recon walk. Save energy for tomorrow's 8:30 AM start. Dress code: modest Indian attire.",
-      hi: "सिर्फ देखने जाना है। कल सुबह 8:30 के लिए ऊर्जा बचाएं। ड्रेस कोड: भारतीय पोशाक।",
+      hi: "बस पहचान के लिए एक चक्कर लगाना है। कल सुबह 8:30 से असली दर्शन हैं, ताक़त बचाकर रखें। शालीन भारतीय पोशाक पहनें।",
     },
     carry: [
       { en: "Slip-on footwear (no leather)", hi: "स्लिप-ऑन चप्पल (चमड़ा नहीं)" },
@@ -70,13 +70,13 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/spatika-lingam.svg",
     tip: {
       en: "₹50/person ticket at East Gate counter. Reach early to avoid crowd.",
-      hi: "₹50/व्यक्ति टिकट पूर्वी गेट पर। भीड़ से बचने के लिए जल्दी पहुँचें।",
+      hi: "पूर्वी गेट काउंटर से ₹50/व्यक्ति का टिकट लें। भीड़ से बचने के लिए जल्दी पहुँचें।",
     },
     carry: [{ en: "₹200 cash (4 tickets)", hi: "₹200 नकद (4 टिकट)" }],
     skipAllowed: true,
     skipConsequence: {
       en: "This is rare and optional. Main darshan sequence is unaffected.",
-      hi: "यह दुर्लभ और वैकल्पिक है। मुख्य दर्शन प्रभावित नहीं होगा।",
+      hi: "यह एक ख़ास मौक़ा है पर ज़रूरी नहीं। मुख्य दर्शन क्रम पर कोई असर नहीं पड़ेगा।",
     },
     nextSlug: "agni-theertham",
     phase: null,
@@ -97,7 +97,7 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/agni-theertham.svg",
     tip: {
       en: "Waves are gentle here. Keep phone & wallet in waterproof pouch. You WILL get fully wet.",
-      hi: "यहाँ लहरें शांत हैं। फ़ोन और पैसे वॉटरप्रूफ पाउच में रखें। पूरे भीगेंगे।",
+      hi: "यहाँ लहरें हल्की होती हैं। फ़ोन और बटुआ वॉटरप्रूफ़ पाउच में रख लें। पूरे तरह भीगना पड़ेगा।",
     },
     carry: [
       { en: "Waterproof pouch", hi: "वॉटरप्रूफ पाउच" },
@@ -125,7 +125,7 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/22-theerthams.svg",
     tip: {
       en: "Buy ₹25/person ticket at North Gate BEFORE getting wet at Agni Theertham. Staff pour water from brass pots at each well.",
-      hi: "अग्नि तीर्थम में भीगने से पहले North Gate पर ₹25/व्यक्ति टिकट खरीदें। हर कुएँ पर पीतल के बर्तन से पानी डाला जाता है।",
+      hi: "अग्नि तीर्थम में भीगने से पहले नॉर्थ गेट पर ₹25/व्यक्ति टिकट ले लें। हर कुएँ पर कर्मचारी पीतल के बर्तन से पानी डालते हैं।",
     },
     carry: [
       { en: "₹100 cash (4 tickets)", hi: "₹100 नकद (4 टिकट)" },
@@ -149,7 +149,7 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/ramanathaswamy-corridor.svg",
     tip: {
       en: "Change into DRY clothes first. ₹200 VIP skip-queue if line is long. NO phones/electronics inside sanctum.",
-      hi: "पहले सूखे कपड़े पहनें। लंबी लाइन हो तो ₹200 VIP लें। मंदिर के अंदर फ़ोन/इलेक्ट्रॉनिक्स नहीं।",
+      hi: "पहले सूखे कपड़े बदल लें। लाइन लंबी हो तो ₹200 में VIP दर्शन ले सकते हैं। गर्भगृह में फ़ोन या कोई भी इलेक्ट्रॉनिक चीज़ ले जाना मना है।",
     },
     carry: [
       { en: "Clean dry clothes (wearing)", hi: "सूखे साफ कपड़े (पहने हुए)" },
@@ -168,7 +168,7 @@ export const CARDS: StepCard[] = [
     title: { en: "Rest at Hotel", hi: "होटल में आराम" },
     subtitle: {
       en: "Mandatory recovery — parents will be drained",
-      hi: "ज़रूरी आराम — माता-पिता थक जाएंगे",
+      hi: "ज़रूरी आराम — सुबह की दर्शन यात्रा से थकान होगी",
     },
     timeWindow: "1:00 – 3:00 PM",
     durationMin: 120,
@@ -176,13 +176,13 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/daiwik-hotel.svg",
     tip: {
       en: "Breakfast at hotel. Don't skip this rest — the afternoon has 3 more stops.",
-      hi: "होटल में नाश्ता। आराम न छोड़ें — दोपहर में 3 और जगह जाना है।",
+      hi: "होटल में नाश्ता करें। यह आराम ज़रूर लें — दोपहर बाद अभी 3 और जगहें बाक़ी हैं।",
     },
     carry: [],
     skipAllowed: true,
     skipConsequence: {
       en: "Fatigue will hit hard at Dhanushkodi. Not recommended.",
-      hi: "धनुषकोडी में बहुत थकान होगी। सलाह नहीं है।",
+      hi: "धनुषकोडी में थकान बहुत मारेगी। आराम छोड़ना ठीक नहीं रहेगा।",
     },
     nextSlug: "dhanushkodi",
     phase: null,
@@ -195,7 +195,7 @@ export const CARDS: StepCard[] = [
     title: { en: "Dhanushkodi", hi: "धनुषकोडी" },
     subtitle: {
       en: "Ram Setu origin + ghost town ruins",
-      hi: "राम सेतु का उद्गम + भूतिया शहर",
+      hi: "राम सेतु का उद्गम स्थल + उजड़े शहर के खंडहर",
     },
     timeWindow: "3:30 – 6:30 PM",
     durationMin: 180,
@@ -203,7 +203,7 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/dhanushkodi.svg",
     tip: {
       en: "20 km from temple. 3-hour round trip. Entry closes 4 PM. Take own car or hire jeep (₹600-800).",
-      hi: "मंदिर से 20 किमी। 3 घंटे का चक्कर। 4 PM तक प्रवेश। अपनी कार या जीप (₹600-800)।",
+      hi: "मंदिर से 20 किमी दूर। आने-जाने में 3 घंटे। शाम 4 बजे तक प्रवेश। अपनी गाड़ी ले जाएँ या जीप किराए पर लें (₹600-800)।",
     },
     carry: [
       { en: "Water bottles", hi: "पानी की बोतलें" },
@@ -213,7 +213,7 @@ export const CARDS: StepCard[] = [
     skipAllowed: true,
     skipConsequence: {
       en: "You miss Ram Setu viewpoint and Kothandaramaswamy Temple. Can push to Day 2 morning instead.",
-      hi: "राम सेतु और कोथंडारामस्वामी मंदिर छूट जाएगा। Day 2 सुबह कर सकते हैं।",
+      hi: "राम सेतु व्यू पॉइंट और कोथंडारामस्वामी मंदिर छूट जाएगा। दूसरे दिन सुबह भी जा सकते हैं।",
     },
     nextSlug: "gandhamadana",
     phase: null,
@@ -231,13 +231,13 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/gandhamadana.svg",
     tip: {
       en: "~3 km from temple. Quick, low-effort visit. Small hilltop temple.",
-      hi: "मंदिर से ~3 किमी। आसान, छोटी यात्रा। पहाड़ी पर छोटा मंदिर।",
+      hi: "मंदिर से करीब 3 किमी। जल्दी हो जाएगा, ज़्यादा मेहनत नहीं। पहाड़ी पर छोटा-सा मंदिर है।",
     },
     carry: [],
     skipAllowed: true,
     skipConsequence: {
       en: "Minor site. No impact on main darshan.",
-      hi: "छोटा स्थान। मुख्य दर्शन पर कोई असर नहीं।",
+      hi: "छोटी-सी जगह है। मुख्य दर्शन पर कोई फ़र्क़ नहीं पड़ेगा।",
     },
     nextSlug: "panchamukhi-hanuman",
     phase: null,
@@ -261,7 +261,7 @@ export const CARDS: StepCard[] = [
     skipAllowed: true,
     skipConsequence: {
       en: "Minor site. You can visit tomorrow morning in the buffer window.",
-      hi: "छोटा स्थान। कल सुबह बफर समय में जा सकते हैं।",
+      hi: "छोटी-सी जगह है। कल सुबह के खाली समय में जा सकते हैं।",
     },
     nextSlug: "buffer-morning",
     phase: null,
@@ -273,10 +273,10 @@ export const CARDS: StepCard[] = [
     dayNumber: 2,
     dayDate: "2026-03-02",
     sortOrder: 11,
-    title: { en: "Morning Buffer", hi: "सुबह का बफर समय" },
+    title: { en: "Morning Buffer", hi: "सुबह का खाली समय" },
     subtitle: {
       en: "Revisit temple or catch missed sites",
-      hi: "मंदिर दोबारा जाएं या छूटी जगहें देखें",
+      hi: "दोबारा मंदिर जाएँ या जो छूट गया वो देख लें",
     },
     timeWindow: "8:00 – 10:00 AM",
     durationMin: 120,
@@ -284,13 +284,13 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/ramanathaswamy-corridor.svg",
     tip: {
       en: "Flexible. Use for anything skipped yesterday. Or just relax at hotel.",
-      hi: "लचीला समय। कल जो छूटा हो वो करें। या होटल में आराम करें।",
+      hi: "यह समय खुला है। कल जो छूट गया हो वो कर लें, या होटल में आराम करें।",
     },
     carry: [],
     skipAllowed: true,
     skipConsequence: {
       en: "Straight to Abdul Kalam Memorial or checkout.",
-      hi: "सीधे अब्दुल कलाम मेमोरियल या चेकआउट।",
+      hi: "सीधे अब्दुल कलाम स्मारक या चेकआउट।",
     },
     nextSlug: "abdul-kalam",
     phase: null,
@@ -301,14 +301,14 @@ export const CARDS: StepCard[] = [
     dayDate: "2026-03-02",
     sortOrder: 12,
     title: { en: "Abdul Kalam Memorial", hi: "अब्दुल कलाम स्मारक" },
-    subtitle: { en: "Optional — non-religious stop", hi: "वैकल्पिक — धार्मिक नहीं" },
+    subtitle: { en: "Optional — non-religious stop", hi: "वैकल्पिक — धार्मिक स्थल नहीं" },
     timeWindow: "10:30 – 11:00 AM",
     durationMin: 30,
     icon: "GraduationCap",
     heroImage: "/images/abdul-kalam-memorial.svg",
     tip: {
       en: "2.1 km from temple. 30-min visit. Worth it if time allows.",
-      hi: "मंदिर से 2.1 किमी। 30 मिनट। समय हो तो ज़रूर जाएं।",
+      hi: "मंदिर से 2.1 किमी दूर। 30 मिनट लगेंगे। समय हो तो ज़रूर जाएँ।",
     },
     carry: [],
     skipAllowed: true,
@@ -335,10 +335,10 @@ export const CARDS: StepCard[] = [
     heroImage: "/images/daiwik-hotel.svg",
     tip: {
       en: "Pack lunch from hotel. Target arrival: 10-11 PM. Drive safe.",
-      hi: "होटल से लंच पैक करें। पहुँचने का लक्ष्य: रात 10-11 बजे। सुरक्षित गाड़ी चलाएं।",
+      hi: "होटल से खाना पैक करवा लें। पहुँचने का लक्ष्य: रात 10-11 बजे। गाड़ी सँभलकर चलाएँ।",
     },
     carry: [
-      { en: "Packed lunch & water", hi: "पैक किया हुआ लंच और पानी" },
+      { en: "Packed lunch & water", hi: "पैक किया खाना और पानी" },
       { en: "CPAP + chargers", hi: "CPAP + चार्जर" },
     ],
     skipAllowed: false,

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-language";
 import { BilingualText } from "@/lib/types";
 import { AlertTriangle } from "lucide-react";
+import { SKIP_DIALOG, ACTION } from "@/lib/strings";
 
 interface SkipDialogProps {
   open: boolean;
@@ -38,7 +39,7 @@ export function SkipDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
-            Skip {t(stepTitle)}?
+            {t(SKIP_DIALOG.title(t(stepTitle)))}
           </DialogTitle>
           {consequence && (
             <DialogDescription className="text-sm leading-relaxed text-zinc-600">
@@ -53,14 +54,14 @@ export function SkipDialog({
             className="flex-1"
             disabled={loading}
           >
-            Cancel
+            {t(ACTION.cancel)}
           </Button>
           <Button
             onClick={onConfirm}
             disabled={loading}
             className="flex-1 bg-zinc-800 text-white hover:bg-zinc-700"
           >
-            {loading ? "Skipping..." : "Skip"}
+            {loading ? t(ACTION.skipping) : t(ACTION.skip)}
           </Button>
         </DialogFooter>
       </DialogContent>

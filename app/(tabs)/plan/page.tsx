@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useTripData, type V8Card } from "@/hooks/use-trip-data";
+import { useLanguage } from "@/hooks/use-language";
 import { T, TINTS, CSS } from "@/lib/design-tokens";
+import { PLAN, SECTION, ACTION, STATUS } from "@/lib/strings";
 import type { AdjustedTime } from "@/lib/schedule";
 
 /* ─── Icons ─── */
@@ -11,22 +13,23 @@ const Icon = {
 };
 
 function Swatch({ slug, size = 44, radius = 14, onTap }: { slug: string; size?: number; radius?: number; onTap?: (src: string, label: string) => void }) {
-  const t = TINTS[slug as keyof typeof TINTS] || TINTS["check-in"];
+  const tint = TINTS[slug as keyof typeof TINTS] || TINTS["check-in"];
   return (
-    <div onClick={onTap ? (e) => { e.stopPropagation(); onTap(t.img, slug); } : undefined} style={{ width: size, height: size, borderRadius: radius, flexShrink: 0, overflow: "hidden", background: `linear-gradient(145deg, ${t.tint}, ${t.tint}cc)`, cursor: onTap ? "pointer" : undefined }}>
-      <img src={t.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+    <div onClick={onTap ? (e) => { e.stopPropagation(); onTap(tint.img, slug); } : undefined} style={{ width: size, height: size, borderRadius: radius, flexShrink: 0, overflow: "hidden", background: `linear-gradient(145deg, ${tint.tint}, ${tint.tint}cc)`, cursor: onTap ? "pointer" : undefined }}>
+      <img src={tint.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
     </div>
   );
 }
 
 export default function PlanPage() {
   const { cards, idx, adjustedTimes, loading, setLightbox } = useTripData();
+  const { t } = useLanguage();
   const onImageTap = (src: string, label: string) => setLightbox({ src, label });
 
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 24px" }}>
-        <span style={{ fontSize: 13, color: T.tertiary }}>Loading...</span>
+        <span style={{ fontSize: 13, color: T.tertiary }}>{t(STATUS.loading)}</span>
       </div>
     );
   }
@@ -41,20 +44,25 @@ export default function PlanPage() {
 
 function ScreenPlan({ cards, currentIdx, adjustedTimes, onImageTap }: { cards: V8Card[]; currentIdx: number; adjustedTimes: Record<string, AdjustedTime>; onImageTap: (src: string, label: string) => void }) {
   const [exp, setExp] = useState<string | null>(null);
-  const days: [number, string, string][] = [[0, "Feb 28", "Arrival"], [1, "Mar 1", "Core Darshan"], [2, "Mar 2", "Return"]];
+  const { t, lang } = useLanguage();
+  const dayWord = lang === "hi" ? "दिन" : "Day";
+  const phaseWord = lang === "hi" ? "चरण" : "Phase";
+  const carryLabel = t(SECTION.carry);
+
   return (
     <div style={{ padding: "0 24px 24px" }}>
-      {days.map(([dn, dt, lb]) => {
+      {PLAN.dayLabels.map((dayInfo, di) => {
+        const dn = di;
         const dc = cards.filter(c => c.day === dn);
         const doneCount = dc.filter(c => cards.indexOf(c) < currentIdx).length;
         const total = dc.length;
         return (
           <div key={dn} style={{ marginBottom: 36 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: T.accent }}>Day {dn}</span>
-              <span style={{ fontSize: 12, color: T.tertiary, fontWeight: 400 }}>{dt}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: T.accent }}>{dayWord} {dn}</span>
+              <span style={{ fontSize: 12, color: T.tertiary, fontWeight: 400 }}>{dayInfo.date}</span>
               <span style={{ fontSize: 12, color: T.tertiary, opacity: 0.5 }}>·</span>
-              <span style={{ fontSize: 12, color: T.secondary, fontWeight: 400 }}>{lb}</span>
+              <span style={{ fontSize: 12, color: T.secondary, fontWeight: 400 }}>{t(dayInfo.label)}</span>
               <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: doneCount === total && doneCount > 0 ? T.done : T.tertiary }}>{doneCount}/{total}</span>
             </div>
             <div style={{ height: 2, borderRadius: T.rFull, background: "rgba(120,120,128,0.08)", marginBottom: 20 }}>
@@ -86,7 +94,7 @@ function ScreenPlan({ cards, currentIdx, adjustedTimes, onImageTap }: { cards: V
                                 {adj.delta > 0 ? `+${adj.delta}m` : `${adj.delta}m`}
                               </span>
                             )}
-                            {card.phase && <span style={{ fontSize: 10, fontWeight: 600, color: T.accent, background: T.accentSoft, padding: "2px 8px", borderRadius: T.rFull }}>Phase {card.phase}/3</span>}
+                            {card.phase && <span style={{ fontSize: 10, fontWeight: 600, color: T.accent, background: T.accentSoft, padding: "2px 8px", borderRadius: T.rFull }}>{phaseWord} {card.phase}/3</span>}
                           </div>
                         </div>
                         <div style={{ transform: isExp ? "rotate(180deg)" : "rotate(0)", transition: `transform .25s ${T.ease}`, color: T.tertiary, flexShrink: 0 }}>{Icon.chevDown}</div>
@@ -94,11 +102,11 @@ function ScreenPlan({ cards, currentIdx, adjustedTimes, onImageTap }: { cards: V
                       {isExp && (
                         <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${T.border}`, animation: "slideIn .2s ease both" }}>
                           <p style={{ fontSize: 13, color: T.secondary, lineHeight: 1.65, marginBottom: 12 }}>{card.sub}</p>
-                          {card.carry.length > 0 && <p style={{ marginTop: 10, fontSize: 13, color: T.secondary }}><b style={{ fontWeight: 600 }}>Carry:</b> {card.carry.join(" · ")}</p>}
+                          {card.carry.length > 0 && <p style={{ marginTop: 10, fontSize: 13, color: T.secondary }}><b style={{ fontWeight: 600 }}>{carryLabel}:</b> {card.carry.join(" · ")}</p>}
                           {(() => { const ti = TINTS[card.slug as keyof typeof TINTS]; return ti?.maps ? (
                             <a href={ti.maps} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "7px 14px", borderRadius: T.rFull, background: T.accentSoft, border: `1px solid ${T.accentMid}`, color: T.accent, fontSize: 12, fontWeight: 600, textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
                               <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-                              Open in Maps
+                              {t(ACTION.openInMaps)}
                             </a>
                           ) : null; })()}
                         </div>
