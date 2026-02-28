@@ -1,5 +1,7 @@
-import V8App from "./v8-app";
+import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 export default function Home() {
-  return <V8App />;
+  redirect("/now");
 }
