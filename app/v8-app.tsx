@@ -6,6 +6,7 @@ import { CARDS as LIB_CARDS } from "@/lib/cards";
 import { useLanguage } from "@/hooks/use-language";
 import { usePacking } from "@/hooks/use-packing";
 import CarRoutePage from "./car-route";
+import RouteView from "@/components/route-view";
 import WeatherWidget from "@/components/weather-widget";
 import { computeAdjustedPlanTimes, type AdjustedTime } from "@/lib/schedule";
 import type { StepCard, BilingualText } from "@/lib/types";
@@ -833,7 +834,12 @@ export default function App() {
           )}
           {tab === "plan" && <ScreenPlan cards={cards} currentIdx={idx} adjustedTimes={adjustedTimes} onImageTap={(src, label) => setLightbox({ src, label })} />}
           {tab === "info" && <ScreenInfo packing={packing} />}
-          {tab === "route" && <CarRoutePage />}
+          {tab === "route" && (
+            <>
+              <RouteView />
+              <CarRoutePage />
+            </>
+          )}
         </div>
       )}
 
