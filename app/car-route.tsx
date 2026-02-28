@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouteProgress } from "@/hooks/use-route-progress";
+import { useLanguage } from "@/hooks/use-language";
 import { computeAdjustedRouteTimes, formatTime, type AdjustedTime } from "@/lib/schedule";
+import { ACTION, STATUS } from "@/lib/strings";
 
 /* ─── Design Tokens ─── */
 const T = {
@@ -114,6 +116,7 @@ function usePlaceWeather(lat: number, lon: number, enabled: boolean) {
 
 /* ─── Inline Weather ─── */
 function PlaceWeather({ lat, lon, place, enabled }: { lat: number; lon: number; place: string; enabled: boolean }) {
+  const { lang } = useLanguage();
   const { data, loading } = usePlaceWeather(lat, lon, enabled);
   if (!enabled) return null;
 
@@ -125,7 +128,7 @@ function PlaceWeather({ lat, lon, place, enabled }: { lat: number; lon: number; 
           border: `1.5px solid ${T.sunken}`, borderTopColor: T.tertiary,
           animation: "crSpin 0.8s linear infinite",
         }} />
-        <span style={{ fontSize: 11, color: T.tertiary }}>Loading weather...</span>
+        <span style={{ fontSize: 11, color: T.tertiary }}>{lang === "hi" ? "मौसम लोड हो रहा..." : "Loading weather..."}</span>
       </div>
     );
   }
@@ -169,6 +172,7 @@ function PlaceWeather({ lat, lon, place, enabled }: { lat: number; lon: number; 
    Page Component
    ═══════════════════════════════════════════════ */
 export default function CarRoutePage() {
+  const { t } = useLanguage();
   const { completed, completedAt, startTime, toggle, setStartTime, loading } = useRouteProgress("rameshwaram-car-route");
   const [exp, setExp] = useState<number | null>(null);
   const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
@@ -577,7 +581,7 @@ export default function CarRoutePage() {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
                             </svg>
-                            Open in Maps
+                            {t(ACTION.openInMaps)}
                           </a>
                         )}
                       </div>

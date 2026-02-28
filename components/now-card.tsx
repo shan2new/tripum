@@ -24,7 +24,7 @@ interface NowCardProps {
 
 export function NowCard({ step, nextStep, onAction }: NowCardProps) {
   const { user } = useUser();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [skipOpen, setSkipOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [celeb, setCeleb] = useState(false);
@@ -111,7 +111,7 @@ export function NowCard({ step, nextStep, onAction }: NowCardProps) {
           letterSpacing: "0.1em", textTransform: "uppercase",
           color: "var(--yatra-accent)",
         }}>
-          Day {card.dayNumber}
+          {lang === "hi" ? "दिन" : "Day"} {card.dayNumber}
         </span>
         <span style={{ fontSize: "11px", color: "var(--yatra-text-faint)", fontWeight: 500 }}>
           {dayLabel ? t(dayLabel).replace(/Day \d+ · /, "").replace(/दिन \d+ · /, "") : ""}

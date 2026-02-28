@@ -2,6 +2,7 @@
 
 import { CardArt } from "./card-art";
 import { getVisualIdentity } from "@/lib/visual-identity";
+import { useLanguage } from "@/hooks/use-language";
 
 interface HeroCardProps {
   slug: string;
@@ -12,6 +13,7 @@ interface HeroCardProps {
 
 export function HeroCard({ slug, phase, title, sub }: HeroCardProps) {
   const v = getVisualIdentity(slug);
+  const { lang } = useLanguage();
 
   return (
     <div style={{
@@ -58,7 +60,7 @@ export function HeroCard({ slug, phase, title, sub }: HeroCardProps) {
           color: "white", fontSize: "11px", fontWeight: 600,
           letterSpacing: "0.06em", padding: "5px 14px", borderRadius: "100px",
         }}>
-          Phase {phase} of 3
+          {lang === "hi" ? `चरण ${phase} / 3` : `Phase ${phase} of 3`}
         </div>
       )}
 
