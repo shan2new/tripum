@@ -30,15 +30,15 @@ const T = {
 
 /* ─── Route Data ─── */
 const phases = [
-  { type: "stop", fn: "Chiku Drop-off", name: "Pet boarding / sitter", time: "5:30 AM", note: "Share vet contact · Print feeding schedule · Pack 3 days food", img: "/images/home.jpg" },
-  { type: "drive", from: "Bengaluru", to: "Salem", distance: "200 km", time: "6:00 – 9:00 AM", highway: "NH 44" },
-  { type: "stop", fn: "Breakfast", name: "A2B, Thoppur · Salem", time: "9:00 – 10:00 AM", note: "SUV parking · Clean restrooms", img: "/images/a2b_salem.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=Adyar+Ananda+Bhavan+-+A2B&query_place_id=ChIJk74wW78arDsRNzIOQHUwMQc" },
-  { type: "drive", from: "Salem", to: "Madurai", distance: "160 km", time: "10:00 AM – 1:00 PM", highway: "NH 44 → NH 87" },
-  { type: "stop", fn: "Lunch", name: "Gowri Krishna Veg · Madurai Bypass", time: "1:00 – 2:00 PM", note: "On bypass — avoids city traffic", img: "/images/gowri_krishna_veg.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Gowri+Krishna-+Veg+Restaurant&query_place_id=ChIJ0e2cBp3PADsRGgSJVWsxwIg" },
-  { type: "stop", fn: "Major Refuel", name: "IndianOil SWAGAT COCO · Madurai", time: "~1:45 PM", note: "XP95 available · Fill 100% — sparse stations ahead", critical: true, maps: "https://www.google.com/maps/search/?api=1&query=IndianOil+-+SWAGAT&query_place_id=ChIJ-2HjLkXBADsRhWXOEE6_scs" },
-  { type: "drive", from: "Madurai", to: "Rameshwaram", distance: "192 km", time: "2:00 – 5:30 PM", highway: "NH 87" },
-  { type: "stop", fn: "Tea", name: "Chaya Kada · Ramanathapuram", time: "~4:30 PM", note: "20 min before final stretch", img: "/images/chaya_kada.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=CHAYA+KADA&query_place_id=ChIJ2W0mIAebATsR1d6E6dikzso" },
-  { type: "arrival", name: "Rameshwaram", time: "~6:00 PM", note: "Via Pamban Bridge · Temple closes 1 – 3:30 PM — evening darshan available", img: "/images/temple.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Pamban+Bridge&query_place_id=ChIJNRza64bvATsRL3U2O5svnYg" },
+  { type: "stop", fn: "Chiku Drop-off", name: "Pet boarding / sitter", time: "8:30 AM", note: "Share vet contact · Print feeding schedule · Pack 3 days food", img: "/images/home.jpg" },
+  { type: "drive", from: "Bengaluru", to: "Salem", distance: "200 km", time: "9:00 AM – 12:00 PM", highway: "NH 44" },
+  { type: "stop", fn: "Breakfast", name: "A2B, Thoppur · Salem", time: "12:00 – 1:00 PM", note: "SUV parking · Clean restrooms", img: "/images/a2b_salem.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=Adyar+Ananda+Bhavan+-+A2B&query_place_id=ChIJk74wW78arDsRNzIOQHUwMQc" },
+  { type: "drive", from: "Salem", to: "Madurai", distance: "160 km", time: "1:00 – 4:00 PM", highway: "NH 44 → NH 87" },
+  { type: "stop", fn: "Lunch", name: "Gowri Krishna Veg · Madurai Bypass", time: "4:00 – 5:00 PM", note: "On bypass — avoids city traffic", img: "/images/gowri_krishna_veg.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Gowri+Krishna-+Veg+Restaurant&query_place_id=ChIJ0e2cBp3PADsRGgSJVWsxwIg" },
+  { type: "stop", fn: "Major Refuel", name: "IndianOil SWAGAT COCO · Madurai", time: "~4:45 PM", note: "XP95 available · Fill 100% — sparse stations ahead", critical: true, maps: "https://www.google.com/maps/search/?api=1&query=IndianOil+-+SWAGAT&query_place_id=ChIJ-2HjLkXBADsRhWXOEE6_scs" },
+  { type: "drive", from: "Madurai", to: "Rameshwaram", distance: "192 km", time: "5:00 – 8:30 PM", highway: "NH 87" },
+  { type: "stop", fn: "Tea", name: "Chaya Kada · Ramanathapuram", time: "~7:30 PM", note: "20 min before final stretch", img: "/images/chaya_kada.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=CHAYA+KADA&query_place_id=ChIJ2W0mIAebATsR1d6E6dikzso" },
+  { type: "arrival", name: "Rameshwaram", time: "~9:00 PM", note: "Via Pamban Bridge · Late arrival — head straight to hotel", img: "/images/temple.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Pamban+Bridge&query_place_id=ChIJNRza64bvATsRL3U2O5svnYg" },
 ] as const;
 
 type Phase = (typeof phases)[number];
