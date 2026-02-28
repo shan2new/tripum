@@ -9,22 +9,25 @@ import { formatTime } from "@/lib/schedule";
 const T = {
   bg:        "#FAF9F6",
   surface:   "#FFFFFF",
-  wash:      "#F3F2EF",
+  wash:      "#F5F5F3",
   sunken:    "#E8E6E1",
-  text:      "#181511",
-  secondary: "#6B665E",
-  tertiary:  "#9B958C",
+  text:      "#1D1D1F",
+  secondary: "#6E6E73",
+  tertiary:  "#AEAEB2",
   accent:    "#9B6B2C",
-  accentSoft:"rgba(155,107,44,0.08)",
-  done:      "#2D8B55",
-  doneSoft:  "rgba(45,139,85,0.08)",
+  accentSoft:"rgba(155,107,44,0.06)",
+  done:      "#34C759",
+  doneSoft:  "rgba(52,199,89,0.08)",
   live:      "#007AFF",
   liveSoft:  "rgba(0,122,255,0.08)",
-  liveGlow:  "rgba(0,122,255,0.15)",
-  border:    "rgba(24,21,17,0.05)",
-  sans:      "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-  mono:      "'DM Mono', 'SF Mono', monospace",
-  ease:      "cubic-bezier(0.22, 1, 0.36, 1)",
+  liveGlow:  "rgba(0,122,255,0.12)",
+  border:    "rgba(60,60,67,0.06)",
+  routeGray: "#D1D1D6",
+  routeActive:"#9B6B2C",
+  sans:      "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Instrument Sans', system-ui, sans-serif",
+  mono:      "'SF Mono', 'DM Mono', ui-monospace, monospace",
+  ease:      "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+  spring:    "cubic-bezier(0.34, 1.56, 0.64, 1)",
 };
 
 /* ─── Route Waypoints ─── */
@@ -44,7 +47,7 @@ function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
 
 function kmToPoint(km: number, w: number, h: number): { x: number; y: number } {
   const t = km / TOTAL_KM;
-  const pad = 52;
+  const pad = 56;
   const usableW = w - pad * 2;
   const usableH = h - pad * 2;
 
@@ -121,20 +124,17 @@ export default function RouteView() {
     return maxKm;
   }, [completed]);
 
-  // Project GPS position onto route
   const livePosition = useMemo(() => {
     if (!geo.position) return null;
     const proj = projectOntoRoute(geo.position.lat, geo.position.lon, waypoints);
-    // Only show if reasonably close to the route (within 25 km)
     if (proj.offRouteKm > 25) return null;
     return {
       routeKm: Math.round(proj.routeKm),
       offRouteKm: proj.offRouteKm,
-      speed: geo.position.speed !== null ? Math.round(geo.position.speed * 3.6) : null, // m/s → km/h
+      speed: geo.position.speed !== null ? Math.round(geo.position.speed * 3.6) : null,
     };
   }, [geo.position]);
 
-  // Next waypoint from live position
   const nextWaypoint = useMemo(() => {
     if (!geo.position) return null;
     const liveKm = livePosition?.routeKm ?? 0;
@@ -156,8 +156,6 @@ export default function RouteView() {
   const svgH = 420;
   const fullPath = routePath(svgW, svgH);
   const carPos = kmToPoint(progressKm, svgW, svgH);
-
-  // Live GPS position on map
   const livePos = livePosition ? kmToPoint(livePosition.routeKm, svgW, svgH) : null;
 
   const wpPositions = waypoints.map(wp => ({
@@ -169,55 +167,57 @@ export default function RouteView() {
   return (
     <div style={{
       fontFamily: T.sans,
-      padding: "0 20px 8px",
+      padding: "0 20px 12px",
       opacity: loading ? 0.4 : 1,
-      transition: "opacity 0.4s ease",
+      transition: "opacity 0.3s ease",
     }}>
       <style>{`
-        @keyframes rvPulse { 0%,100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.8); opacity: 0; } }
-        @keyframes rvFadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes rvLivePulse { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(2.2); opacity: 0; } }
-        @keyframes rvLiveDot { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        @keyframes rvPulse { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(2); opacity: 0; } }
+        @keyframes rvFadeUp { from { opacity:0; transform:translateY(8px) scale(0.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes rvLivePulse { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(2.5); opacity: 0; } }
+        @keyframes rvLiveDot { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
       `}</style>
 
       {/* ── Map Card ── */}
       <div style={{
         background: T.surface,
-        borderRadius: 20,
-        boxShadow: "0 1px 2px rgba(24,21,17,0.04), 0 4px 24px rgba(24,21,17,0.04)",
+        borderRadius: 16,
+        boxShadow: "0 0.5px 0 rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.03)",
         overflow: "hidden",
-        animation: "rvFadeUp .5s ease both",
+        animation: "rvFadeUp .4s ease both",
       }}>
         {/* ── Location toggle ── */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "flex-end",
-          padding: "12px 16px 0",
+          padding: "14px 16px 0",
         }}>
           <button
             onClick={() => geo.watching ? geo.stop() : geo.start()}
             style={{
               display: "flex", alignItems: "center", gap: 5,
-              padding: "5px 10px",
-              borderRadius: 8,
+              padding: "6px 12px",
+              borderRadius: 20,
               border: "none",
-              background: geo.watching ? T.liveSoft : T.wash,
-              color: geo.watching ? T.live : T.tertiary,
-              fontSize: 11, fontWeight: 600,
+              background: geo.watching ? T.liveSoft : "rgba(120,120,128,0.08)",
+              color: geo.watching ? T.live : T.secondary,
+              fontSize: 12, fontWeight: 500,
               cursor: "pointer",
-              transition: `all .2s ${T.ease}`,
+              transition: `all .25s ${T.ease}`,
+              letterSpacing: "-0.01em",
             }}
           >
-            <svg width="11" height="11" fill="none" viewBox="0 0 24 24"
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"
               stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-              {geo.watching && (
+              {geo.watching ? (
                 <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-              )}
-              {!geo.watching && (
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-5.07-1.41 1.41M8.34 15.66l-1.41 1.41m0-10.14 1.41 1.41m7.32 7.32 1.41 1.41" />
+                  d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              ) : (
+                <>
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-5.07-1.41 1.41M8.34 15.66l-1.41 1.41m0-10.14 1.41 1.41m7.32 7.32 1.41 1.41" />
+                </>
               )}
             </svg>
             {geo.watching ? "Live" : "Location"}
@@ -229,20 +229,33 @@ export default function RouteView() {
           width="100%"
           style={{ display: "block" }}
         >
-          {/* Subtle dot grid */}
           <defs>
-            <pattern id="rv-grid" width="28" height="28" patternUnits="userSpaceOnUse">
-              <circle cx="14" cy="14" r="0.4" fill={T.sunken} opacity="0.7" />
-            </pattern>
             <linearGradient id="rv-route-grad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={allDone ? T.done : T.accent} stopOpacity="1" />
-              <stop offset="100%" stopColor={allDone ? T.done : T.accent} stopOpacity="0.6" />
+              <stop offset="0%" stopColor={allDone ? T.done : T.routeActive} stopOpacity="1" />
+              <stop offset="100%" stopColor={allDone ? T.done : T.routeActive} stopOpacity="0.7" />
             </linearGradient>
+            <filter id="rv-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+            </filter>
           </defs>
-          <rect width={svgW} height={svgH} fill="url(#rv-grid)" />
 
           {/* Full route trail */}
-          <path d={fullPath} fill="none" stroke={T.sunken} strokeWidth="2.5" strokeLinecap="round" opacity="0.6" />
+          <path d={fullPath} fill="none" stroke={T.routeGray} strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+
+          {/* Completed route glow */}
+          {progressKm > 0 && (() => {
+            const pts: string[] = [];
+            const steps = 100;
+            for (let i = 0; i <= steps; i++) {
+              const km = (i / steps) * TOTAL_KM;
+              if (km > progressKm) break;
+              const { x, y } = kmToPoint(km, svgW, svgH);
+              pts.push(`${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`);
+            }
+            return (
+              <path d={pts.join(" ")} fill="none" stroke={allDone ? T.done : T.routeActive} strokeWidth="5" strokeLinecap="round" opacity="0.08" filter="url(#rv-glow)" />
+            );
+          })()}
 
           {/* Completed route */}
           {progressKm > 0 && (() => {
@@ -255,21 +268,22 @@ export default function RouteView() {
               pts.push(`${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`);
             }
             return (
-              <path d={pts.join(" ")} fill="none" stroke="url(#rv-route-grad)" strokeWidth="3" strokeLinecap="round" />
+              <path d={pts.join(" ")} fill="none" stroke="url(#rv-route-grad)" strokeWidth="2.5" strokeLinecap="round" />
             );
           })()}
 
-          {/* Highway labels */}
+          {/* Highway labels — subtle, cartographic */}
           {[
             { km: 100, label: "NH 44", angle: -22 },
             { km: 420, label: "NH 87", angle: 12 },
           ].map((hw, i) => {
             const p = kmToPoint(hw.km, svgW, svgH);
             return (
-              <text key={i} x={p.x + 16} y={p.y - 12}
-                fontSize="7" fontFamily={T.mono} fontWeight="500"
-                fill={T.tertiary} opacity={0.4}
-                transform={`rotate(${hw.angle}, ${p.x + 16}, ${p.y - 12})`}
+              <text key={i} x={p.x + 16} y={p.y - 14}
+                fontSize="7" fontFamily={T.mono} fontWeight="400"
+                fill={T.tertiary} opacity={0.35}
+                transform={`rotate(${hw.angle}, ${p.x + 16}, ${p.y - 14})`}
+                letterSpacing="0.03em"
               >{hw.label}</text>
             );
           })}
@@ -279,43 +293,44 @@ export default function RouteView() {
             const p1 = kmToPoint(518, svgW, svgH);
             const p2 = kmToPoint(542, svgW, svgH);
             return (
-              <g opacity="0.35">
+              <g opacity="0.3">
                 <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
-                  stroke={T.tertiary} strokeWidth="0.8" strokeDasharray="2.5,2" />
+                  stroke={T.tertiary} strokeWidth="0.6" strokeDasharray="2,2.5" />
                 <text x={(p1.x + p2.x) / 2} y={(p1.y + p2.y) / 2 - 7}
-                  fontSize="6.5" fontFamily={T.mono} fontWeight="500"
+                  fontSize="6" fontFamily={T.sans} fontWeight="500"
                   fill={T.tertiary} textAnchor="middle"
+                  letterSpacing="0.02em"
                 >Pamban Bridge</text>
               </g>
             );
           })()}
 
-          {/* Waypoint markers */}
+          {/* Waypoint markers — Apple Maps style */}
           {wpPositions.map((wp, i) => {
             const isDest = wp.type === "dest";
             const isOrigin = wp.type === "origin";
             const isSmall = wp.type === "stop";
-            const r = isDest ? 6.5 : isOrigin ? 5.5 : isSmall ? 3 : 4.5;
+            const r = isDest ? 7 : isOrigin ? 5.5 : isSmall ? 2.5 : 4;
             const labelSide = i % 2 === 0 ? -1 : 1;
 
             return (
               <g key={wp.name}>
+                {/* Destination halo */}
                 {isDest && !allDone && (
-                  <>
-                    <circle cx={wp.x} cy={wp.y} r={16} fill={T.accent} opacity="0.06" />
-                    <circle cx={wp.x} cy={wp.y} r={11} fill="none" stroke={T.accent} strokeWidth="0.8" opacity="0.15" />
-                  </>
+                  <circle cx={wp.x} cy={wp.y} r={14} fill={T.accent} opacity="0.05" />
                 )}
                 {isDest && allDone && (
-                  <circle cx={wp.x} cy={wp.y} r={13} fill={T.done} opacity="0.08" />
+                  <circle cx={wp.x} cy={wp.y} r={14} fill={T.done} opacity="0.06" />
                 )}
 
+                {/* Dot */}
                 <circle cx={wp.x} cy={wp.y} r={r}
                   fill={wp.passed ? (allDone ? T.done : T.accent) : T.surface}
-                  stroke={wp.passed ? "none" : T.sunken}
-                  strokeWidth={1.5}
+                  stroke={wp.passed ? "none" : T.routeGray}
+                  strokeWidth={isSmall ? 1 : 1.5}
                 />
 
+                {/* Checkmark for passed waypoints */}
                 {wp.passed && !isSmall && (
                   <path
                     d={`M${wp.x - 2.5},${wp.y} L${wp.x - 0.5},${wp.y + 2} L${wp.x + 3},${wp.y - 2}`}
@@ -323,26 +338,29 @@ export default function RouteView() {
                   />
                 )}
 
+                {/* Label — name */}
                 <text
-                  x={wp.x + labelSide * (r + 8)}
-                  y={wp.y + (isDest ? -12 : 0)}
+                  x={wp.x + labelSide * (r + 10)}
+                  y={wp.y + (isDest ? -13 : 0)}
                   textAnchor={labelSide < 0 ? "end" : "start"}
-                  fontSize={isDest || isOrigin ? "11.5" : isSmall ? "8.5" : "10"}
+                  fontSize={isDest || isOrigin ? "11" : isSmall ? "8" : "9.5"}
                   fontFamily={T.sans}
-                  fontWeight={isDest || isOrigin ? "700" : "500"}
+                  fontWeight={isDest ? "700" : isOrigin ? "600" : "500"}
                   fill={wp.passed ? T.text : T.tertiary}
                   dominantBaseline="central"
                   letterSpacing="-0.02em"
                 >{wp.name}</text>
 
+                {/* Label — distance */}
                 {!isSmall && (
                   <text
-                    x={wp.x + labelSide * (r + 8)}
-                    y={wp.y + (isDest ? 0 : 13)}
+                    x={wp.x + labelSide * (r + 10)}
+                    y={wp.y + (isDest ? 0 : 14)}
                     textAnchor={labelSide < 0 ? "end" : "start"}
-                    fontSize="8" fontFamily={T.mono} fontWeight="400"
+                    fontSize="7.5" fontFamily={T.mono} fontWeight="400"
                     fill={T.tertiary} dominantBaseline="central"
-                    opacity="0.7"
+                    opacity="0.6"
+                    letterSpacing="0.01em"
                   >{wp.km === 0 ? "Start" : `${wp.km} km`}</text>
                 )}
               </g>
@@ -352,29 +370,26 @@ export default function RouteView() {
           {/* Progress position (from checklist) */}
           {!allDone && progressKm < TOTAL_KM && !livePos && (
             <g>
-              <circle cx={carPos.x} cy={carPos.y} r="8"
-                fill="none" stroke={T.accent} strokeWidth="1.5"
+              <circle cx={carPos.x} cy={carPos.y} r="7"
+                fill="none" stroke={T.accent} strokeWidth="1"
                 style={{ animation: "rvPulse 2s ease-in-out infinite", transformOrigin: `${carPos.x}px ${carPos.y}px` }}
               />
-              <circle cx={carPos.x} cy={carPos.y} r="5" fill={T.accent} />
-              <circle cx={carPos.x} cy={carPos.y} r="2" fill="white" />
+              <circle cx={carPos.x} cy={carPos.y} r="4.5" fill={T.accent} />
+              <circle cx={carPos.x} cy={carPos.y} r="1.8" fill="white" />
             </g>
           )}
 
           {/* Live GPS position (Apple Maps blue dot) */}
           {livePos && !allDone && (
             <g style={{ animation: "rvLiveDot .3s ease both" }}>
-              {/* Accuracy glow */}
-              <circle cx={livePos.x} cy={livePos.y} r="14"
+              <circle cx={livePos.x} cy={livePos.y} r="12"
                 fill={T.live} opacity="0.06" />
-              {/* Pulse ring */}
-              <circle cx={livePos.x} cy={livePos.y} r="8"
-                fill="none" stroke={T.live} strokeWidth="1.5"
+              <circle cx={livePos.x} cy={livePos.y} r="7"
+                fill="none" stroke={T.live} strokeWidth="1"
                 style={{ animation: "rvLivePulse 2s ease-in-out infinite", transformOrigin: `${livePos.x}px ${livePos.y}px` }}
               />
-              {/* Blue dot */}
-              <circle cx={livePos.x} cy={livePos.y} r="6" fill={T.live} />
-              <circle cx={livePos.x} cy={livePos.y} r="2.5" fill="white" />
+              <circle cx={livePos.x} cy={livePos.y} r="5.5" fill={T.live} />
+              <circle cx={livePos.x} cy={livePos.y} r="2" fill="white" />
             </g>
           )}
 
@@ -390,18 +405,18 @@ export default function RouteView() {
           )}
         </svg>
 
-        {/* ── Progress strip inside card ── */}
+        {/* ── Progress strip ── */}
         <div style={{ padding: "0 20px 20px" }}>
-          {/* Progress bar */}
+          {/* Thin progress bar */}
           <div style={{
-            height: 3, borderRadius: 2,
-            background: T.wash, overflow: "hidden",
-            marginBottom: 16,
+            height: 2, borderRadius: 1,
+            background: "rgba(120,120,128,0.08)", overflow: "hidden",
+            marginBottom: 18,
           }}>
             <div style={{
-              width: `${pct}%`, height: "100%", borderRadius: 2,
+              width: `${pct}%`, height: "100%", borderRadius: 1,
               background: allDone ? T.done : T.accent,
-              transition: `width 0.8s ${T.ease}`,
+              transition: `width 0.6s ${T.ease}`,
             }} />
           </div>
 
@@ -412,13 +427,14 @@ export default function RouteView() {
           }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
               <span style={{
-                fontSize: 26, fontWeight: 300, color: allDone ? T.done : T.text,
+                fontSize: 28, fontWeight: 200, color: allDone ? T.done : T.text,
                 letterSpacing: "-0.04em", lineHeight: 1,
                 fontVariantNumeric: "tabular-nums",
               }}>{livePosition ? livePosition.routeKm : progressKm}</span>
               <span style={{
-                fontSize: 12, fontWeight: 500, color: T.tertiary,
-              }}>of {TOTAL_KM} km</span>
+                fontSize: 13, fontWeight: 400, color: T.tertiary,
+                letterSpacing: "-0.01em",
+              }}>/ {TOTAL_KM} km</span>
             </div>
 
             <div style={{
@@ -428,30 +444,33 @@ export default function RouteView() {
               {livePosition && livePosition.speed !== null && livePosition.speed > 0 && (
                 <>
                   <span style={{
-                    fontSize: 12, fontWeight: 600, color: T.live,
+                    fontSize: 13, fontWeight: 500, color: T.live,
                     fontFamily: T.mono, fontVariantNumeric: "tabular-nums",
+                    letterSpacing: "-0.02em",
                   }}>{livePosition.speed} km/h</span>
-                  <span style={{ width: 1, height: 14, background: T.sunken, display: "block" }} />
+                  <span style={{ width: 0.5, height: 12, background: T.tertiary, opacity: 0.3, display: "block" }} />
                 </>
               )}
               {livePosition && nextWaypoint && (
                 <>
                   <span style={{
-                    fontSize: 11, color: T.secondary,
+                    fontSize: 12, color: T.secondary,
+                    letterSpacing: "-0.01em",
                   }}>{nextWaypoint.distKm} km to {nextWaypoint.name}</span>
-                  <span style={{ width: 1, height: 14, background: T.sunken, display: "block" }} />
+                  <span style={{ width: 0.5, height: 12, background: T.tertiary, opacity: 0.3, display: "block" }} />
                 </>
               )}
               {!livePosition && (
                 <>
                   <span style={{
-                    fontSize: 12, color: T.secondary,
-                    fontFamily: T.mono, fontVariantNumeric: "tabular-nums",
+                    fontSize: 13, color: T.secondary,
+                    fontVariantNumeric: "tabular-nums",
+                    letterSpacing: "-0.01em",
                   }}>{formatTime(effectiveStart)}</span>
                   {destWeather && (
                     <>
-                      <span style={{ width: 1, height: 14, background: T.sunken, display: "block" }} />
-                      <span style={{ fontSize: 12, color: T.secondary }}>
+                      <span style={{ width: 0.5, height: 12, background: T.tertiary, opacity: 0.3, display: "block" }} />
+                      <span style={{ fontSize: 13, color: T.secondary }}>
                         {weatherIcon(destWeather.code)} {destWeather.temp}°
                       </span>
                     </>
