@@ -19,9 +19,15 @@ interface UseGeolocationResult {
   stop: () => void;
 }
 
+const GEO_STORAGE_KEY = "tripum-geo-watching";
+
 /**
  * Watch the user's geolocation. Returns null until permission is granted
  * and a fix is acquired. Automatically stops when the component unmounts.
+ *
+ * Persists the watching preference to localStorage so that if the user
+ * has already granted permission and enabled location mode, it
+ * auto-resumes after a page refresh without requiring another tap.
  */
 export function useGeolocation(): UseGeolocationResult {
   const [position, setPosition] = useState<GeoPosition | null>(null);
@@ -35,6 +41,7 @@ export function useGeolocation(): UseGeolocationResult {
       setWatchId(null);
     }
     setWatching(false);
+    try { localStorage.setItem(GEO_STORAGE_KEY, "false"); } catch {}
   }, [watchId]);
 
   const start = useCallback(() => {
@@ -45,6 +52,7 @@ export function useGeolocation(): UseGeolocationResult {
 
     setWatching(true);
     setError(null);
+    try { localStorage.setItem(GEO_STORAGE_KEY, "true"); } catch {}
 
     const id = navigator.geolocation.watchPosition(
       (pos) => {
@@ -59,11 +67,16 @@ export function useGeolocation(): UseGeolocationResult {
         setError(null);
       },
       (err) => {
-        setError(
+        const msg =
           err.code === 1 ? "Permission denied" :
           err.code === 2 ? "Position unavailable" :
-          "Timeout"
-        );
+          "Timeout";
+        setError(msg);
+        // If permission was denied, clear the persisted preference
+        if (err.code === 1) {
+          try { localStorage.setItem(GEO_STORAGE_KEY, "false"); } catch {}
+          setWatching(false);
+        }
       },
       {
         enableHighAccuracy: true,
@@ -73,6 +86,17 @@ export function useGeolocation(): UseGeolocationResult {
     );
 
     setWatchId(id);
+  }, []);
+
+  // Auto-resume watching on mount if previously enabled
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(GEO_STORAGE_KEY) === "true") {
+        start();
+      }
+    } catch {}
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
