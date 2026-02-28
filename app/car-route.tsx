@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouteProgress } from "@/hooks/use-route-progress";
+import { computeAdjustedRouteTimes, formatTime, type AdjustedTime } from "@/lib/schedule";
 
 /* ─── Design Tokens (matching v8-app) ─── */
 const T = {
@@ -19,6 +20,8 @@ const T = {
   doneSoft:  "rgba(40,120,74,0.1)",
   critical:  "#8B3A3A",
   criticalSoft:"rgba(139,58,58,0.1)",
+  blue:      "#2B6BBF",
+  blueSoft:  "rgba(43,107,191,0.08)",
   border:    "rgba(24,21,17,0.06)",
   shadow:    "0 2px 8px rgba(24,21,17,0.04)",
   sans:      "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
@@ -29,27 +32,41 @@ const T = {
 };
 
 /* ─── Route Data ─── */
+const DEFAULT_START = 510; // 8:30 AM in minutes from midnight
+
 const phases = [
-  { type: "stop", fn: "Chiku Drop-off", name: "Pet boarding / sitter", time: "8:30 AM", note: "Share vet contact · Print feeding schedule · Pack 3 days food", img: "/images/home.jpg" },
-  { type: "drive", from: "Bengaluru", to: "Salem", distance: "200 km", time: "9:00 AM – 12:00 PM", highway: "NH 44" },
-  { type: "stop", fn: "Breakfast", name: "A2B, Thoppur · Salem", time: "12:00 – 1:00 PM", note: "SUV parking · Clean restrooms", img: "/images/a2b_salem.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=Adyar+Ananda+Bhavan+-+A2B&query_place_id=ChIJk74wW78arDsRNzIOQHUwMQc" },
-  { type: "drive", from: "Salem", to: "Madurai", distance: "160 km", time: "1:00 – 4:00 PM", highway: "NH 44 → NH 87" },
-  { type: "stop", fn: "Lunch", name: "Gowri Krishna Veg · Madurai Bypass", time: "4:00 – 5:00 PM", note: "On bypass — avoids city traffic", img: "/images/gowri_krishna_veg.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Gowri+Krishna-+Veg+Restaurant&query_place_id=ChIJ0e2cBp3PADsRGgSJVWsxwIg" },
-  { type: "stop", fn: "Major Refuel", name: "IndianOil SWAGAT COCO · Madurai", time: "~4:45 PM", note: "XP95 available · Fill 100% — sparse stations ahead", critical: true, maps: "https://www.google.com/maps/search/?api=1&query=IndianOil+-+SWAGAT&query_place_id=ChIJ-2HjLkXBADsRhWXOEE6_scs" },
-  { type: "drive", from: "Madurai", to: "Rameshwaram", distance: "192 km", time: "5:00 – 8:30 PM", highway: "NH 87" },
-  { type: "stop", fn: "Tea", name: "Chaya Kada · Ramanathapuram", time: "~7:30 PM", note: "20 min before final stretch", img: "/images/chaya_kada.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=CHAYA+KADA&query_place_id=ChIJ2W0mIAebATsR1d6E6dikzso" },
-  { type: "arrival", name: "Rameshwaram", time: "~9:00 PM", note: "Via Pamban Bridge · Late arrival — head straight to hotel", img: "/images/temple.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Pamban+Bridge&query_place_id=ChIJNRza64bvATsRL3U2O5svnYg" },
+  { type: "stop", fn: "Chiku Drop-off", name: "Pet boarding / sitter", time: "8:30 AM", durationMin: 30, note: "Share vet contact · Print feeding schedule · Pack 3 days food", img: "/images/home.jpg" },
+  { type: "drive", from: "Bengaluru", to: "Salem", distance: "200 km", time: "9:00 AM – 12:00 PM", durationMin: 180, highway: "NH 44" },
+  { type: "stop", fn: "Breakfast", name: "A2B, Thoppur · Salem", time: "12:00 – 1:00 PM", durationMin: 60, note: "SUV parking · Clean restrooms", img: "/images/a2b_salem.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=Adyar+Ananda+Bhavan+-+A2B&query_place_id=ChIJk74wW78arDsRNzIOQHUwMQc" },
+  { type: "drive", from: "Salem", to: "Madurai", distance: "160 km", time: "1:00 – 4:00 PM", durationMin: 180, highway: "NH 44 → NH 87" },
+  { type: "stop", fn: "Lunch", name: "Gowri Krishna Veg · Madurai Bypass", time: "4:00 – 5:00 PM", durationMin: 45, note: "On bypass — avoids city traffic", img: "/images/gowri_krishna_veg.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Gowri+Krishna-+Veg+Restaurant&query_place_id=ChIJ0e2cBp3PADsRGgSJVWsxwIg" },
+  { type: "stop", fn: "Major Refuel", name: "IndianOil SWAGAT COCO · Madurai", time: "~4:45 PM", durationMin: 15, note: "XP95 available · Fill 100% — sparse stations ahead", critical: true, maps: "https://www.google.com/maps/search/?api=1&query=IndianOil+-+SWAGAT&query_place_id=ChIJ-2HjLkXBADsRhWXOEE6_scs" },
+  { type: "drive", from: "Madurai", to: "Rameshwaram", distance: "192 km", time: "5:00 – 8:30 PM", durationMin: 150, highway: "NH 87" },
+  { type: "stop", fn: "Tea", name: "Chaya Kada · Ramanathapuram", time: "~7:30 PM", durationMin: 90, note: "20 min before final stretch", img: "/images/chaya_kada.jpeg", maps: "https://www.google.com/maps/search/?api=1&query=CHAYA+KADA&query_place_id=ChIJ2W0mIAebATsR1d6E6dikzso" },
+  { type: "arrival", name: "Rameshwaram", time: "~9:00 PM", durationMin: 0, note: "Via Pamban Bridge · Late arrival — head straight to hotel", img: "/images/temple.jpg", maps: "https://www.google.com/maps/search/?api=1&query=Pamban+Bridge&query_place_id=ChIJNRza64bvATsRL3U2O5svnYg" },
 ] as const;
+
+const PHASE_DURATIONS = phases.map(p => p.durationMin);
+const PHASE_IS_RANGE = phases.map(p => p.time.includes("–"));
 
 type Phase = (typeof phases)[number];
 
 /* ─── Page Component ─── */
 export default function CarRoutePage() {
-  const { completed, toggle, loading } = useRouteProgress("rameshwaram-car-route");
+  const { completed, completedAt, startTime, toggle, setStartTime, loading } = useRouteProgress("rameshwaram-car-route");
   const [exp, setExp] = useState<number | null>(null);
   const [lightbox, setLightbox] = useState<{ src: string; label: string } | null>(null);
+  const [editingStart, setEditingStart] = useState(false);
 
   const doneCount = Object.values(completed).filter(Boolean).length;
+
+  // Compute adjusted times based on completions and custom start time
+  const adjustedTimes = useMemo<AdjustedTime[]>(
+    () => computeAdjustedRouteTimes(PHASE_DURATIONS, DEFAULT_START, completedAt, startTime, PHASE_IS_RANGE),
+    [completedAt, startTime]
+  );
+
+  const effectiveStart = startTime ?? DEFAULT_START;
 
   return (
     <>
@@ -66,6 +83,89 @@ export default function CarRoutePage() {
         transition: "opacity 0.3s ease",
         padding: "24px 24px 32px",
       }}>
+        {/* Departure time editor */}
+        <div style={{
+          background: T.surface,
+          border: `1px solid ${T.border}`,
+          borderRadius: T.r,
+          padding: "14px 18px",
+          marginBottom: 20,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.tertiary, marginBottom: 4 }}>Departure</p>
+              <p style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em", color: T.text, fontVariantNumeric: "tabular-nums" }}>
+                {formatTime(effectiveStart)}
+              </p>
+            </div>
+            {editingStart ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <button
+                  onClick={() => setStartTime(Math.max(0, effectiveStart - 15))}
+                  style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    border: `1.5px solid ${T.border}`, background: T.wash,
+                    color: T.text, fontSize: 14, fontWeight: 600,
+                    cursor: "pointer", fontFamily: T.mono,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >-</button>
+                <button
+                  onClick={() => setStartTime(Math.min(1440, effectiveStart + 15))}
+                  style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    border: `1.5px solid ${T.border}`, background: T.wash,
+                    color: T.text, fontSize: 14, fontWeight: 600,
+                    cursor: "pointer", fontFamily: T.mono,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >+</button>
+                {startTime !== null && (
+                  <button
+                    onClick={() => { setStartTime(null); setEditingStart(false); }}
+                    style={{
+                      padding: "6px 12px", borderRadius: 10,
+                      border: `1.5px solid ${T.border}`, background: T.wash,
+                      color: T.secondary, fontSize: 11, fontWeight: 600,
+                      cursor: "pointer", fontFamily: T.sans,
+                    }}
+                  >Reset</button>
+                )}
+                <button
+                  onClick={() => setEditingStart(false)}
+                  style={{
+                    padding: "6px 12px", borderRadius: 10,
+                    border: "none", background: T.accent,
+                    color: "white", fontSize: 11, fontWeight: 600,
+                    cursor: "pointer", fontFamily: T.sans,
+                  }}
+                >Done</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setEditingStart(true)}
+                style={{
+                  padding: "8px 14px", borderRadius: 10,
+                  border: `1.5px solid ${T.border}`, background: "transparent",
+                  color: T.secondary, fontSize: 12, fontWeight: 600,
+                  cursor: "pointer", fontFamily: T.sans,
+                  display: "flex", alignItems: "center", gap: 6,
+                }}
+              >
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+                </svg>
+                Edit
+              </button>
+            )}
+          </div>
+          {startTime !== null && startTime !== DEFAULT_START && (
+            <p style={{ fontSize: 11, color: T.accent, fontWeight: 500, marginTop: 6 }}>
+              {startTime > DEFAULT_START ? `+${startTime - DEFAULT_START}m` : `${startTime - DEFAULT_START}m`} from original {formatTime(DEFAULT_START)}
+            </p>
+          )}
+        </div>
+
         {/* Day header */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
           <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.accent }}>Day 0</span>
@@ -97,8 +197,7 @@ export default function CarRoutePage() {
             const isExp = exp === i;
             const isDrive = p.type === "drive";
             const isArrival = p.type === "arrival";
-            const isStop = p.type === "stop";
-            const isCritical = "critical" in p && !!(p as Record<string, unknown>).critical;
+            const isCritical = "critical" in p && !!(p as unknown as Record<string, unknown>).critical;
             const hasImg = "img" in p;
             const hasNote = "note" in p;
             const hasMaps = "maps" in p;
@@ -106,6 +205,11 @@ export default function CarRoutePage() {
 
             // Card title
             const title = "from" in p ? `${p.from} → ${p.to}` : "fn" in p ? p.fn : p.name;
+
+            // Adjusted time from cascade
+            const adj = adjustedTimes[i];
+            const displayTime = adj?.time ?? p.time;
+            const isShifted = adj?.shifted ?? false;
 
             return (
               <div key={i} style={{ position: "relative", marginBottom: 2 }}>
@@ -147,13 +251,13 @@ export default function CarRoutePage() {
                     {/* Swatch */}
                     {hasImg ? (
                       <div
-                        onClick={(e) => { e.stopPropagation(); setLightbox({ src: (p as Record<string, string>).img, label: title }); }}
+                        onClick={(e) => { e.stopPropagation(); setLightbox({ src: (p as unknown as Record<string, string>).img, label: title }); }}
                         style={{
                           width: 44, height: 44, borderRadius: 12,
                           overflow: "hidden", flexShrink: 0, cursor: "pointer",
                         }}
                       >
-                        <img src={(p as Record<string, string>).img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        <img src={(p as unknown as Record<string, string>).img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                       </div>
                     ) : (
                       <div style={{
@@ -186,9 +290,25 @@ export default function CarRoutePage() {
                         marginBottom: 4, lineHeight: 1.35,
                       }}>{title}</p>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 13, color: T.secondary, fontVariantNumeric: "tabular-nums", fontFamily: T.mono }}>
-                          {p.time}
+                        <span style={{
+                          fontSize: 13,
+                          color: isShifted ? T.blue : T.secondary,
+                          fontWeight: isShifted ? 600 : 400,
+                          fontVariantNumeric: "tabular-nums",
+                          fontFamily: T.mono,
+                        }}>
+                          {displayTime}
                         </span>
+                        {isShifted && adj && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 600,
+                            color: adj.delta > 0 ? T.critical : T.done,
+                            background: adj.delta > 0 ? T.criticalSoft : T.doneSoft,
+                            padding: "2px 8px", borderRadius: 6,
+                          }}>
+                            {adj.delta > 0 ? `+${adj.delta}m` : `${adj.delta}m`}
+                          </span>
+                        )}
                         {isDrive && "distance" in p && (
                           <span style={{ fontSize: 11, fontWeight: 600, color: T.tertiary, background: T.wash, padding: "4px 10px", borderRadius: 8 }}>
                             {p.distance} · {"highway" in p ? p.highway : ""}
@@ -222,10 +342,10 @@ export default function CarRoutePage() {
                       )}
                       {hasNote && (
                         <p style={{ fontSize: 13, color: T.secondary, lineHeight: 1.65 }}>
-                          {(p as Record<string, string>).note}
+                          {(p as unknown as Record<string, string>).note}
                         </p>
                       )}
-                      {hasMaps && <MapPill url={(p as Record<string, string>).maps} />}
+                      {hasMaps && <MapPill url={(p as unknown as Record<string, string>).maps} />}
                     </div>
                   )}
                 </div>

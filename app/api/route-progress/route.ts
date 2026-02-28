@@ -20,22 +20,46 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data?.completed ?? {});
+  const raw = data?.completed;
+
+  // Handle new format (versioned with metadata)
+  if (raw && typeof raw === "object" && "_version" in raw) {
+    return NextResponse.json({
+      completed: raw.phases ?? {},
+      completedAt: raw.completedAt ?? {},
+      startTime: raw.startTime ?? null,
+    });
+  }
+
+  // Old format (flat boolean map) — return with empty metadata
+  return NextResponse.json({
+    completed: raw ?? {},
+    completedAt: {},
+    startTime: null,
+  });
 }
 
 export async function PUT(req: NextRequest) {
-  let userId: string;
   try {
-    userId = await getAuthUserId();
+    await getAuthUserId();
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id, completed } = await req.json();
+  const body = await req.json();
+  const { id, completed, completedAt, startTime } = body;
 
-  if (typeof id !== "string" || typeof completed !== "object") {
+  if (typeof id !== "string") {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
+
+  // Store in versioned format
+  const storedData = {
+    _version: 2,
+    phases: completed ?? {},
+    completedAt: completedAt ?? {},
+    startTime: startTime ?? null,
+  };
 
   const supabase = createServerSupabase();
   const { error } = await supabase
@@ -43,7 +67,7 @@ export async function PUT(req: NextRequest) {
     .upsert(
       {
         id,
-        completed,
+        completed: storedData,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "id" }
