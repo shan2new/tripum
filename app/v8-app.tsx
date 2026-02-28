@@ -7,11 +7,12 @@ import { useLanguage } from "@/hooks/use-language";
 import { usePacking } from "@/hooks/use-packing";
 import CarRoutePage from "./car-route";
 import WeatherWidget from "@/components/weather-widget";
+import { computeAdjustedPlanTimes, type AdjustedTime } from "@/lib/schedule";
 import type { StepCard, BilingualText } from "@/lib/types";
 
 // ═══════════════════════════════════════════════════════════════
 // RAMESHWARAM YATRA v8 — "Ive Edition"
-// Added: Cash Budget, Per-Person Packing, Car & Route
+// Added: Cash Budget, Per-Person Packing, Route, Schedule Cascade
 // 4 pax: Shantanu + Parents + Shruti | MG Hector CVT
 // ═══════════════════════════════════════════════════════════════
 
@@ -327,15 +328,20 @@ function PhaseBar({ currentPhase }: { currentPhase: number }) {
   );
 }
 
-function TimeDisplay({ time, dur }: { time: string; dur: number }) {
+function TimeDisplay({ time, dur, shifted, delta }: { time: string; dur: number; shifted?: boolean; delta?: number }) {
   const durStr = dur >= 60 ? `${Math.floor(dur / 60)}h${dur % 60 ? ` ${dur % 60}m` : ''}` : `${dur}m`;
   const parts = time.split("–");
   return (
     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
         <span style={{ color: T.tertiary, display: "flex", alignItems: "center", marginRight: 2 }}>{Icon.clock}</span>
-        <span style={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.035em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{parts[0]?.trim().split(" ")[0]}</span>
-        <span style={{ fontSize: 14, fontWeight: 400, color: T.secondary, letterSpacing: "-0.01em" }}>{time.includes("–") ? `– ${parts[1]?.trim()}` : time.split(" ").slice(1).join(" ")}</span>
+        <span style={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.035em", lineHeight: 1, fontVariantNumeric: "tabular-nums", color: shifted ? T.blue : T.text }}>{parts[0]?.trim().split(" ")[0]}</span>
+        <span style={{ fontSize: 14, fontWeight: 400, color: shifted ? T.blue : T.secondary, letterSpacing: "-0.01em" }}>{time.includes("–") ? `– ${parts[1]?.trim()}` : time.split(" ").slice(1).join(" ")}</span>
+        {shifted && delta != null && delta !== 0 && (
+          <span style={{ fontSize: 11, fontWeight: 600, color: delta > 0 ? "#8B3A3A" : T.done, background: delta > 0 ? "rgba(139,58,58,0.1)" : T.doneSoft, padding: "2px 8px", borderRadius: 6, marginLeft: 4 }}>
+            {delta > 0 ? `+${delta}m` : `${delta}m`}
+          </span>
+        )}
       </div>
       <span style={{ fontSize: 12, fontWeight: 500, color: T.secondary, background: T.wash, padding: "5px 12px", borderRadius: T.rFull }}>{durStr}</span>
     </div>
@@ -431,9 +437,10 @@ function Row({ label, value, link, last, note, bold }: { label: string; value: s
    SCREENS
    ═══════════════════════════════════════ */
 
-function ScreenNow({ card, onDone, onSkip, onImageTap }: { card: V8Card; onDone: () => void; onSkip: () => void; onImageTap: (src: string, label: string) => void }) {
+function ScreenNow({ card, adjusted, onDone, onSkip, onImageTap }: { card: V8Card; adjusted?: AdjustedTime; onDone: () => void; onSkip: () => void; onImageTap: (src: string, label: string) => void }) {
   const [done, setDone] = useState(false);
   const nextSlug = card.nextSlug;
+  const displayTime = adjusted?.shifted ? adjusted.time : card.time;
 
   const handleDone = () => { setDone(true); setTimeout(() => { setDone(false); onDone(); }, 500); };
 
@@ -448,7 +455,7 @@ function ScreenNow({ card, onDone, onSkip, onImageTap }: { card: V8Card; onDone:
       <div className="s2"><WeatherWidget /></div>
       <div className="s3"><HeroCard slug={card.slug} phase={card.phase} title={card.title} sub={card.sub} onTap={onImageTap} /></div>
       {card.phase && <div className="s4"><PhaseBar currentPhase={card.phase} /></div>}
-      <div className={card.phase ? "s5" : "s4"}><TimeDisplay time={card.time} dur={card.dur} /></div>
+      <div className={card.phase ? "s5" : "s4"}><TimeDisplay time={displayTime} dur={card.dur} shifted={adjusted?.shifted} delta={adjusted?.delta} /></div>
       {(() => { const ti = TINTS[card.slug as keyof typeof TINTS]; return ti?.maps ? (
         <div className={card.phase ? "s6" : "s5"}>
           <a href={ti.maps} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: T.rFull, background: T.accentSoft, border: `1px solid ${T.accentMid}`, color: T.accent, fontSize: 13, fontWeight: 600, textDecoration: "none", WebkitTapHighlightColor: "transparent" }}>
@@ -472,7 +479,7 @@ function ScreenNow({ card, onDone, onSkip, onImageTap }: { card: V8Card; onDone:
 }
 
 
-function ScreenPlan({ cards, currentIdx, onImageTap }: { cards: V8Card[]; currentIdx: number; onImageTap: (src: string, label: string) => void }) {
+function ScreenPlan({ cards, currentIdx, adjustedTimes, onImageTap }: { cards: V8Card[]; currentIdx: number; adjustedTimes: Record<string, AdjustedTime>; onImageTap: (src: string, label: string) => void }) {
   const [exp, setExp] = useState<string | null>(null);
   const days: [number, string, string][] = [[0, "Feb 28", "Arrival"], [1, "Mar 1", "Core Darshan"], [2, "Mar 2", "Return"]];
   return (
@@ -497,6 +504,9 @@ function ScreenPlan({ cards, currentIdx, onImageTap }: { cards: V8Card[]; curren
               <div style={{ position: "absolute", left: 11, top: 12, bottom: 12, width: 1, background: T.sunken }} />
               {dc.map(card => {
                 const gi = cards.indexOf(card), isCurr = gi === currentIdx, isDone = gi < currentIdx, isExp = exp === card.slug;
+                const adj = adjustedTimes[card.slug];
+                const planTime = adj?.shifted ? adj.time : card.time;
+                const planShifted = adj?.shifted ?? false;
                 return (
                   <div key={card.slug} style={{ position: "relative", marginBottom: 2 }}>
                     <div style={{ position: "absolute", left: -27, top: 20, width: 14, height: 14, borderRadius: "50%", zIndex: 2, background: isDone ? T.done : isCurr ? T.accent : T.bg, border: isDone || isCurr ? "none" : `1.5px solid ${T.sunken}`, display: "flex", alignItems: "center", justifyContent: "center", transition: `all .2s ${T.ease}` }}>
@@ -510,7 +520,12 @@ function ScreenPlan({ cards, currentIdx, onImageTap }: { cards: V8Card[]; curren
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ fontSize: 15, fontWeight: isDone ? 400 : 500, color: isDone ? T.tertiary : T.text, textDecoration: isDone ? "line-through" : "none", marginBottom: 2, lineHeight: 1.3 }}>{card.title}</p>
                           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 13, color: T.secondary, fontVariantNumeric: "tabular-nums" }}>{card.time}</span>
+                            <span style={{ fontSize: 13, color: planShifted ? T.blue : T.secondary, fontWeight: planShifted ? 600 : 400, fontVariantNumeric: "tabular-nums" }}>{planTime}</span>
+                            {planShifted && adj && adj.delta !== 0 && (
+                              <span style={{ fontSize: 10, fontWeight: 600, color: adj.delta > 0 ? "#8B3A3A" : T.done, background: adj.delta > 0 ? "rgba(139,58,58,0.1)" : T.doneSoft, padding: "2px 8px", borderRadius: 6 }}>
+                                {adj.delta > 0 ? `+${adj.delta}m` : `${adj.delta}m`}
+                              </span>
+                            )}
                             {card.phase && <span style={{ fontSize: 10, fontWeight: 600, color: T.accent, background: T.accentSoft, padding: "2px 8px", borderRadius: T.rFull }}>Phase {card.phase}/3</span>}
                           </div>
                         </div>
@@ -707,6 +722,20 @@ export default function App() {
     return LIB_CARDS.length;
   }, [steps]);
 
+  // Build completion map and compute cascading adjusted times
+  const completions = useMemo(() => {
+    const map: Record<string, { status: string; completedAt: string | null }> = {};
+    for (const step of steps) {
+      map[step.state.slug] = { status: step.state.status, completedAt: step.state.completed_at };
+    }
+    return map;
+  }, [steps]);
+
+  const adjustedTimes = useMemo(
+    () => computeAdjustedPlanTimes(LIB_CARDS, completions),
+    [completions]
+  );
+
   const allDone = idx >= cards.length;
   const card = allDone ? cards[cards.length - 1] : cards[idx];
 
@@ -749,7 +778,7 @@ export default function App() {
             letterSpacing: "-0.04em", lineHeight: 1.1,
             margin: 0, fontFamily: T.sans,
           }}>
-            {tab === "now" ? "Now" : tab === "plan" ? "Plan" : tab === "info" ? "Info" : "Car & Route"}
+            {tab === "now" ? "Now" : tab === "plan" ? "Plan" : tab === "info" ? "Info" : "Route"}
           </h1>
           <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
             <button
@@ -794,7 +823,7 @@ export default function App() {
         </div>
       ) : (
         <div key={`${tab}-${morphKey}`} style={{ paddingBottom: 100 }}>
-          {tab === "now" && !allDone && <ScreenNow card={card} onDone={() => advance("done")} onSkip={() => advance("skipped")} onImageTap={(src, label) => setLightbox({ src, label })} />}
+          {tab === "now" && !allDone && <ScreenNow card={card} adjusted={adjustedTimes[card.slug]} onDone={() => advance("done")} onSkip={() => advance("skipped")} onImageTap={(src, label) => setLightbox({ src, label })} />}
           {tab === "now" && allDone && (
             <div style={{ padding: "60px 24px", textAlign: "center" as const }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🙏</div>
@@ -802,7 +831,7 @@ export default function App() {
               <p style={{ fontSize: 14, color: T.secondary, lineHeight: 1.6 }}>All steps done. Har Har Mahadev!</p>
             </div>
           )}
-          {tab === "plan" && <ScreenPlan cards={cards} currentIdx={idx} onImageTap={(src, label) => setLightbox({ src, label })} />}
+          {tab === "plan" && <ScreenPlan cards={cards} currentIdx={idx} adjustedTimes={adjustedTimes} onImageTap={(src, label) => setLightbox({ src, label })} />}
           {tab === "info" && <ScreenInfo packing={packing} />}
           {tab === "route" && <CarRoutePage />}
         </div>
