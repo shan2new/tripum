@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/hooks/use-language";
 import { BilingualText } from "@/lib/types";
+import { SECTION } from "@/lib/strings";
 
 interface TipCalloutProps {
   tip: BilingualText;
@@ -31,7 +32,7 @@ export function TipCallout({ tip }: TipCalloutProps) {
           letterSpacing: "0.1em", textTransform: "uppercase",
           color: "var(--yatra-accent)",
         }}>
-          Insider Tip
+          {t(SECTION.insiderTip)}
         </span>
       </div>
       <p style={{

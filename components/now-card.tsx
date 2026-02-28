@@ -6,6 +6,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { StepViewModel } from "@/lib/types";
 import { DAY_LABELS } from "@/lib/cards";
 import { getVisualIdentity, getPhaseNumber } from "@/lib/visual-identity";
+import { DAY_TITLES, ACTION } from "@/lib/strings";
 import { HeroCard } from "./hero-card";
 import { PhaseBar } from "./phase-bar";
 import { TipCallout } from "./tip-callout";
@@ -89,12 +90,8 @@ export function NowCard({ step, nextStep, onAction }: NowCardProps) {
     ? `– ${timeParts[1]?.trim()}`
     : startTimeParts.slice(1).join(" ");
 
-  // Day title
-  const dayTitles: Record<number, string> = {
-    0: "Arrival Day",
-    1: "Core Darshan Day",
-    2: "Buffer & Return",
-  };
+  // Day title (bilingual)
+  const dayTitleBi = DAY_TITLES[card.dayNumber];
 
   const sBase = phaseNum ? 4 : 3; // stagger class offset
 
@@ -121,7 +118,7 @@ export function NowCard({ step, nextStep, onAction }: NowCardProps) {
         </span>
         <span style={{ fontSize: "11px", color: "var(--yatra-text-faint)" }}>·</span>
         <span style={{ fontSize: "11px", color: "var(--yatra-text-soft)", fontStyle: "italic" }}>
-          {dayTitles[card.dayNumber] ?? ""}
+          {dayTitleBi ? t(dayTitleBi) : ""}
         </span>
       </div>
 
@@ -219,9 +216,9 @@ export function NowCard({ step, nextStep, onAction }: NowCardProps) {
                 <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
                 </svg>
-                Skip
+                {t(ACTION.skip)}
               </span>
-              <span style={{ fontSize: "9px", color: "var(--yatra-text-faint)", fontWeight: 400 }}>Not this time</span>
+              <span style={{ fontSize: "9px", color: "var(--yatra-text-faint)", fontWeight: 400 }}>{t(ACTION.skipSubtext)}</span>
             </button>
           )}
           <button
@@ -251,7 +248,7 @@ export function NowCard({ step, nextStep, onAction }: NowCardProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             )}
-            {celeb ? "Done!" : loading ? "Updating..." : "Mark Done"}
+            {celeb ? t(ACTION.done) : loading ? t(ACTION.updating) : t(ACTION.markDone)}
           </button>
         </div>
       )}

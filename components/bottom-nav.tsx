@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/hooks/use-language";
+import { NAV } from "@/lib/strings";
+import type { BilingualText } from "@/lib/types";
 
 const tabs = [
-  { href: "/now", label: "Now", id: "now" },
-  { href: "/plan", label: "Plan", id: "plan" },
-  { href: "/info", label: "Info", id: "info" },
+  { href: "/now", label: NAV.now, id: "now" },
+  { href: "/plan", label: NAV.plan, id: "plan" },
+  { href: "/info", label: NAV.info, id: "info" },
 ] as const;
 
 function NavIcon({ type, active }: { type: string; active: boolean }) {
@@ -36,7 +39,8 @@ function NavIcon({ type, active }: { type: string; active: boolean }) {
 
 export function BottomNav() {
   const pathname = usePathname();
-  const activeIdx = tabs.findIndex((t) => pathname === t.href);
+  const { t } = useLanguage();
+  const activeIdx = tabs.findIndex((tab) => pathname === tab.href);
 
   return (
     <nav style={{
@@ -91,7 +95,7 @@ export function BottomNav() {
               fontWeight: isActive ? 700 : 500,
               letterSpacing: "0.03em",
             }}>
-              {label}
+              {t(label as BilingualText)}
             </span>
           </Link>
         );

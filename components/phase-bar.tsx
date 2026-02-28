@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/hooks/use-language";
 import { PHASE_STEPS } from "@/lib/visual-identity";
 
 interface PhaseBarProps {
@@ -7,6 +8,8 @@ interface PhaseBarProps {
 }
 
 export function PhaseBar({ currentPhase }: PhaseBarProps) {
+  const { t } = useLanguage();
+
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 0,
@@ -40,7 +43,7 @@ export function PhaseBar({ currentPhase }: PhaseBarProps) {
                 color: done ? "var(--yatra-green)" : active ? "var(--yatra-accent)" : "var(--yatra-text-faint)",
                 letterSpacing: "0.02em", whiteSpace: "nowrap",
               }}>
-                {step}
+                {t(step)}
               </span>
             </div>
             {i < PHASE_STEPS.length - 1 && (

@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useTripData } from "@/hooks/use-trip-data";
+import { useLanguage } from "@/hooks/use-language";
 import { T, TINTS, CSS } from "@/lib/design-tokens";
+import { INFO_STRINGS, INFO_DATA, PACKING_DATA, BUDGET_DATA, SECTION, STATUS, ACTION } from "@/lib/strings";
+import type { BilingualText } from "@/lib/types";
 
 /* ─── Icons ─── */
 const Icon = {
@@ -15,72 +18,18 @@ const Icon = {
   hotel: <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M15.75 21H8.25m6.75-18.545c-.75-.11-1.51-.17-2.25-.195m-2.25.195c-.75.025-1.5.085-2.25.195M15.75 3.545v3.06a3.75 3.75 0 0 1-7.5 0v-3.06"/></svg>,
 };
 
-/* ─── Info Data ─── */
-const INFO = {
-  hotel:{ name:"Daiwik Hotels", addr:"1/28A, Sethupathi St, Rameshwaram, TN 623526", phone:"+91 4573 221 777", cin:"2:00 PM", cout:"12:00 PM", dist:"2.5 km from temple", parking:"Free parking at hotel" },
-  timings:[{k:"Morning Darshan",v:"4:00 AM – 1:00 PM"},{k:"Temple Closed",v:"1:00 – 3:00 PM"},{k:"Evening Darshan",v:"3:00 – 8:00 PM"},{k:"Spatika Lingam",v:"5:00 – 6:00 AM only"}],
-  dress:[{t:"Men — Dhoti/pyjama + kurta",em:false},{t:"Women — Saree/churidar + dupatta",em:false},{t:"No western wear or leather inside temple",em:true},{t:"Wet clothes not allowed in main sanctum",em:true}],
-  sos:[{k:"Hotel Front Desk",v:"+91 4573 221 777"},{k:"Rameshwaram Police",v:"04573-221 210"},{k:"Govt Hospital",v:"04573-221 223"}],
-};
+/* ─── Hotel Data (non-translatable specifics) ─── */
+const HOTEL = { name: "Daiwik Hotels", addr: "1/28A, Sethupathi St, Rameshwaram, TN 623526", phone: "+91 4573 221 777", cin: "2:00 PM", cout: "12:00 PM", dist: { en: "2.5 km from temple", hi: "मंदिर से 2.5 किमी" } as BilingualText, parking: { en: "Free parking at hotel", hi: "होटल में मुफ़्त पार्किंग" } as BilingualText };
 
-/* ─── Budget Data ─── */
-const BUDGET = {
-  temple: [
-    { item: "Spatika Lingam", unit: "₹50 × 4", total: 200 },
-    { item: "22 Theerthams", unit: "₹25 × 4", total: 100 },
-    { item: "Main Darshan VIP", unit: "₹200 × 4", total: 800, note: "if queue > 30 min" },
-    { item: "Abdul Kalam Memorial", unit: "₹15 × 4", total: 60 },
-  ],
-  transport: [
-    { item: "Fuel (round trip)", unit: "~104L × ₹102", total: 10600, note: "Hector CVT @ ~11 km/l" },
-    { item: "Tolls (FASTag)", unit: "~₹900 × 2", total: 1800, note: "via Salem–Trichy" },
-    { item: "Dhanushkodi Jeep", unit: "₹150 × 4", total: 600, note: "shared jeep, last 8 km" },
-  ],
-  food: [
-    { item: "Day 0 dinner", unit: "4 pax", total: 1000 },
-    { item: "Day 1 lunch + dinner", unit: "4 pax", total: 1500 },
-    { item: "Day 2 road lunch", unit: "4 pax", total: 800 },
-    { item: "Snacks / water / chai", unit: "3 days", total: 500 },
-  ],
-  misc: [
-    { item: "Prasad / offerings", unit: "", total: 500 },
-    { item: "Temple parking", unit: "2 days", total: 200 },
-    { item: "Emergency buffer", unit: "", total: 500 },
-  ],
-};
-
+/* ─── Budget Totals ─── */
 const BUDGET_TOTALS = {
-  temple: BUDGET.temple.reduce((s,i)=>s+i.total,0),
-  transport: BUDGET.transport.reduce((s,i)=>s+i.total,0),
-  food: BUDGET.food.reduce((s,i)=>s+i.total,0),
-  misc: BUDGET.misc.reduce((s,i)=>s+i.total,0),
+  temple: BUDGET_DATA.temple.reduce((s, i) => s + i.total, 0),
+  transport: BUDGET_DATA.transport.reduce((s, i) => s + i.total, 0),
+  food: BUDGET_DATA.food.reduce((s, i) => s + i.total, 0),
+  misc: BUDGET_DATA.misc.reduce((s, i) => s + i.total, 0),
 };
-const BUDGET_GRAND = Object.values(BUDGET_TOTALS).reduce((s,v)=>s+v,0);
+const BUDGET_GRAND = Object.values(BUDGET_TOTALS).reduce((s, v) => s + v, 0);
 const CASH_CARRY = 5000;
-
-/* ─── Packing Lists ─── */
-const PACKING = {
-  shantanu: {
-    label: "Shantanu", sub: "Driver + CPAP",
-    items: ["CPAP machine + power adapter + extension cord","Driving license, RC, insurance printout","FASTag — check balance (₹2,000+)","Phone mount + car charger (USB-C)","2 sets dhoti/kurta (temple)","1 set clothes for sea bath (will get soaked)","1 spare casual set","Towel","Waterproof pouch (phone + keys)","Wallet — ₹5,000 cash + cards","Sunglasses","Medications (if any)","Slip-on footwear (temple)"],
-  },
-  parents: {
-    label: "Parents", sub: "Comfort priority",
-    items: ["Comfortable walking shoes (long temple corridors)","2 sets traditional clothes (temple — dhoti/saree)","1 set clothes for sea bath","1 spare comfortable set","Towels","All regular medications","Reading glasses","Light shawl / jacket (5 AM temple visit)","Slip-on footwear (temple)","Small pillow / neck rest (10 hr drive)","Water bottle each"],
-  },
-  shruti: {
-    label: "Shruti", sub: "",
-    items: ["2 sets churidar / saree (temple)","1 set clothes for sea bath","1 spare casual set","Dupatta (temple requirement for women)","Towel","Sunscreen","Slip-on footwear (temple)","Medications (if any)"],
-  },
-  car: {
-    label: "Car & Shared", sub: "MG Hector",
-    items: ["Water bottles × 8","Snack box (drive + temple breaks)","First aid kit","Umbrella × 2 (sun protection)","Plastic bags × 6 (for wet clothes)","Car documents folder (RC, insurance)","Tissue / wet wipes","Garbage bags","Phone charging cables × 2","Torch / phone flashlight (5 AM temple)"],
-  },
-  petcare: {
-    label: "Pre-departure", sub: "Chiku & Oreo",
-    items: ["Confirm pet boarding / sitter","Drop off pets before departure","Share vet contact with sitter","Print feeding schedule + medication (if any)","Pack enough pet food for 3 days","Share your contact + Surabhi as backup"],
-  },
-};
 
 /* ─── Components ─── */
 function InfoSection({ icon, label, defaultOpen = false, children, badge }: { icon: React.ReactNode; label: string; defaultOpen?: boolean; children: React.ReactNode; badge?: string }) {
@@ -118,12 +67,13 @@ function Row({ label, value, link, last, note, bold }: { label: string; value: s
   );
 }
 
-function PackingChecklist({ items, storageKey, packing }: { items: string[]; storageKey: string; packing: { isChecked: (k: string, i: number) => boolean; toggle: (k: string, i: number) => void } }) {
+function PackingChecklist({ items, storageKey, packing, packedLabel }: { items: BilingualText[]; storageKey: string; packing: { isChecked: (k: string, i: number) => boolean; toggle: (k: string, i: number) => void }; packedLabel: string }) {
+  const { t } = useLanguage();
   const done = items.filter((_, i) => packing.isChecked(storageKey, i)).length;
   return (
     <div style={{ background: T.wash, borderRadius: 12, padding: "12px 14px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-        <span style={{ fontSize: 11, color: T.secondary }}>{done}/{items.length} packed</span>
+        <span style={{ fontSize: 11, color: T.secondary }}>{packedLabel}</span>
         <div style={{ height: 3, flex: 1, marginLeft: 12, marginTop: 5, borderRadius: T.rFull, background: T.sunken }}>
           <div style={{ width: `${items.length > 0 ? (done / items.length) * 100 : 0}%`, height: "100%", borderRadius: T.rFull, background: done === items.length ? T.done : T.accent, transition: `width .3s ${T.ease}` }} />
         </div>
@@ -135,7 +85,7 @@ function PackingChecklist({ items, storageKey, packing }: { items: string[]; sto
             <div style={{ width: 18, height: 18, borderRadius: 5, flexShrink: 0, marginTop: 1, border: checked ? "none" : `1.5px solid ${T.tertiary}`, background: checked ? T.done : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: `all .15s ${T.ease}` }}>
               {checked && <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
             </div>
-            <span style={{ fontSize: 13, lineHeight: 1.5, color: checked ? T.tertiary : T.text, textDecoration: checked ? "line-through" : "none", transition: `all .15s ${T.ease}` }}>{item}</span>
+            <span style={{ fontSize: 13, lineHeight: 1.5, color: checked ? T.tertiary : T.text, textDecoration: checked ? "line-through" : "none", transition: `all .15s ${T.ease}` }}>{t(item)}</span>
           </div>
         );
       })}
@@ -146,114 +96,123 @@ function PackingChecklist({ items, storageKey, packing }: { items: string[]; sto
 /* ─── Page ─── */
 export default function InfoPage() {
   const { packing, loading } = useTripData();
+  const { t } = useLanguage();
   const fmt = (n: number) => "₹" + n.toLocaleString("en-IN");
 
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "80px 24px" }}>
-        <span style={{ fontSize: 13, color: T.tertiary }}>Loading...</span>
+        <span style={{ fontSize: 13, color: T.tertiary }}>{t(STATUS.loading)}</span>
       </div>
     );
   }
 
+  const tBi = (bi: BilingualText | string) => typeof bi === "string" ? bi : t(bi);
+
   return (
     <div style={{ padding: "0 24px 24px" }}>
       <style>{CSS}</style>
-      <p className="s1" style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary, marginBottom: 16 }}>Reference</p>
+      <p className="s1" style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary, marginBottom: 16 }}>{t(SECTION.reference)}</p>
 
       {/* ─── CASH BUDGET ─── */}
       <div className="s2">
-        <InfoSection icon={Icon.rupee} label="Cash Budget" badge={fmt(BUDGET_GRAND)} defaultOpen>
+        <InfoSection icon={Icon.rupee} label={t(INFO_STRINGS.cashBudget)} badge={fmt(BUDGET_GRAND)} defaultOpen>
           <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
             <div style={{ flex: 1, background: T.accentSoft, borderRadius: 12, padding: "14px 14px", textAlign: "center" }}>
-              <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: T.accent, marginBottom: 4 }}>Total Trip</p>
+              <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: T.accent, marginBottom: 4 }}>{t(INFO_STRINGS.totalTrip)}</p>
               <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: T.accent }}>{fmt(BUDGET_GRAND)}</p>
             </div>
             <div style={{ flex: 1, background: T.doneSoft, borderRadius: 12, padding: "14px 14px", textAlign: "center" }}>
-              <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: T.done, marginBottom: 4 }}>Cash to Carry</p>
+              <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: T.done, marginBottom: 4 }}>{t(INFO_STRINGS.cashToCarry)}</p>
               <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: T.done }}>{fmt(CASH_CARRY)}</p>
             </div>
           </div>
           <p style={{ fontSize: 11, color: T.secondary, marginBottom: 16, lineHeight: 1.6 }}>
-            Fuel & tolls via FASTag + UPI. Cash needed for temple counters, Dhanushkodi jeep & small vendors.
+            {t(INFO_STRINGS.budgetNote)}
           </p>
 
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>Temple & Entry</p>
-          {BUDGET.temple.map((b, i) => <Row key={i} label={b.item} value={fmt(b.total)} note={(b as Record<string, unknown>).note as string | undefined} last={i === BUDGET.temple.length - 1} />)}
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>{t(INFO_STRINGS.templeEntry)}</p>
+          {BUDGET_DATA.temple.map((b, i) => <Row key={i} label={t(b.item)} value={fmt(b.total)} note={(b as { note?: BilingualText }).note ? tBi((b as { note: BilingualText }).note) : undefined} last={i === BUDGET_DATA.temple.length - 1} />)}
           <Row label="" value={fmt(BUDGET_TOTALS.temple)} bold last />
           <div style={{ height: 1, background: T.border, margin: "8px 0 12px" }} />
 
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>Transport</p>
-          {BUDGET.transport.map((b, i) => <Row key={i} label={b.item} value={fmt(b.total)} note={b.note} last={i === BUDGET.transport.length - 1} />)}
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>{t(INFO_STRINGS.transport)}</p>
+          {BUDGET_DATA.transport.map((b, i) => <Row key={i} label={t(b.item)} value={fmt(b.total)} note={b.note ? tBi(b.note) : undefined} last={i === BUDGET_DATA.transport.length - 1} />)}
           <Row label="" value={fmt(BUDGET_TOTALS.transport)} bold last />
           <div style={{ height: 1, background: T.border, margin: "8px 0 12px" }} />
 
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>Food</p>
-          {BUDGET.food.map((b, i) => <Row key={i} label={b.item} value={fmt(b.total)} last={i === BUDGET.food.length - 1} />)}
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>{t(INFO_STRINGS.food)}</p>
+          {BUDGET_DATA.food.map((b, i) => <Row key={i} label={t(b.item)} value={fmt(b.total)} last={i === BUDGET_DATA.food.length - 1} />)}
           <Row label="" value={fmt(BUDGET_TOTALS.food)} bold last />
           <div style={{ height: 1, background: T.border, margin: "8px 0 12px" }} />
 
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>Miscellaneous</p>
-          {BUDGET.misc.map((b, i) => <Row key={i} label={b.item} value={fmt(b.total)} last={i === BUDGET.misc.length - 1} />)}
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 6 }}>{t(INFO_STRINGS.miscellaneous)}</p>
+          {BUDGET_DATA.misc.map((b, i) => <Row key={i} label={t(b.item)} value={fmt(b.total)} last={i === BUDGET_DATA.misc.length - 1} />)}
           <Row label="" value={fmt(BUDGET_TOTALS.misc)} bold last />
         </InfoSection>
       </div>
 
       {/* ─── PACKING LISTS ─── */}
       <div className="s3">
-        <InfoSection icon={Icon.suitcase} label="Packing Lists" badge="5 lists">
-          {Object.entries(PACKING).map(([key, person], pi) => (
-            <div key={key} style={{ marginBottom: pi < Object.keys(PACKING).length - 1 ? 20 : 0 }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 600 }}>{person.label}</span>
-                {person.sub && <span style={{ fontSize: 11, color: T.tertiary }}>{person.sub}</span>}
+        <InfoSection icon={Icon.suitcase} label={t(INFO_STRINGS.packingLists)} badge={t(INFO_STRINGS.listsCount)}>
+          {Object.entries(PACKING_DATA).map(([key, person], pi) => {
+            const packedLabel = t(INFO_STRINGS.packed(
+              person.items.filter((_, i) => packing.isChecked(key, i)).length,
+              person.items.length
+            ));
+            return (
+              <div key={key} style={{ marginBottom: pi < Object.keys(PACKING_DATA).length - 1 ? 20 : 0 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600 }}>{t(person.label)}</span>
+                  {person.sub && <span style={{ fontSize: 11, color: T.tertiary }}>{t(person.sub)}</span>}
+                </div>
+                <PackingChecklist items={person.items} storageKey={key} packing={packing} packedLabel={packedLabel} />
               </div>
-              <PackingChecklist items={person.items} storageKey={key} packing={packing} />
-            </div>
-          ))}
+            );
+          })}
         </InfoSection>
       </div>
 
       {/* ─── HOTEL ─── */}
       <div className="s5">
-        <InfoSection icon={Icon.hotel} label="Hotel">
-          <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 3 }}>{INFO.hotel.name}</p>
-          <p style={{ fontSize: 13, color: T.secondary, marginBottom: 14 }}>{INFO.hotel.addr}</p>
+        <InfoSection icon={Icon.hotel} label={t(INFO_STRINGS.hotel)}>
+          <p style={{ fontSize: 16, fontWeight: 600, marginBottom: 3 }}>{HOTEL.name}</p>
+          <p style={{ fontSize: 13, color: T.secondary, marginBottom: 14 }}>{HOTEL.addr}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <a href={`tel:${INFO.hotel.phone}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", borderRadius: T.rFull, background: T.accentSoft, color: T.accent, textDecoration: "none", fontSize: 14, fontWeight: 600, border: `1px solid ${T.accentMid}` }}>{Icon.phone} {INFO.hotel.phone}</a>
+            <a href={`tel:${HOTEL.phone}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", borderRadius: T.rFull, background: T.accentSoft, color: T.accent, textDecoration: "none", fontSize: 14, fontWeight: 600, border: `1px solid ${T.accentMid}` }}>{Icon.phone} {HOTEL.phone}</a>
             <a href={TINTS["check-in"].maps} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", borderRadius: T.rFull, background: T.accentSoft, color: T.accent, textDecoration: "none", fontSize: 14, fontWeight: 600, border: `1px solid ${T.accentMid}` }}>
               <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
-              Maps
+              {t(ACTION.openInMaps)}
             </a>
           </div>
           <div style={{ fontSize: 13, color: T.secondary, display: "flex", gap: 20, marginTop: 14 }}>
-            <span>In: <b style={{ color: T.text, fontWeight: 600 }}>{INFO.hotel.cin}</b></span>
-            <span>Out: <b style={{ color: T.text, fontWeight: 600 }}>{INFO.hotel.cout}</b></span>
+            <span>{t(INFO_DATA.hotel.checkIn)}: <b style={{ color: T.text, fontWeight: 600 }}>{HOTEL.cin}</b></span>
+            <span>{t(INFO_DATA.hotel.checkOut)}: <b style={{ color: T.text, fontWeight: 600 }}>{HOTEL.cout}</b></span>
           </div>
-          <p style={{ fontSize: 13, color: T.secondary, marginTop: 6 }}>{INFO.hotel.dist} · {INFO.hotel.parking}</p>
+          <p style={{ fontSize: 13, color: T.secondary, marginTop: 6 }}>{t(HOTEL.dist)} · {t(HOTEL.parking)}</p>
         </InfoSection>
       </div>
 
       {/* ─── TIMINGS ─── */}
       <div className="s6">
-        <InfoSection icon={Icon.clock} label="Temple Timings">
-          {INFO.timings.map((t, i) => <Row key={i} label={t.k} value={t.v} last={i === INFO.timings.length - 1} />)}
+        <InfoSection icon={Icon.clock} label={t(INFO_STRINGS.templeTimings)}>
+          {INFO_DATA.timings.map((timing, i) => <Row key={i} label={t(timing.k)} value={timing.v} last={i === INFO_DATA.timings.length - 1} />)}
         </InfoSection>
       </div>
 
       {/* ─── DRESS CODE ─── */}
       <div className="s7">
-        <InfoSection icon={Icon.bag} label="Dress Code">
-          {INFO.dress.map((d, i) => (
-            <p key={i} style={{ fontSize: 14, lineHeight: 2, color: d.em ? T.accent : T.text, fontWeight: d.em ? 600 : 400 }}>{d.t}</p>
+        <InfoSection icon={Icon.bag} label={t(INFO_STRINGS.dressCode)}>
+          {INFO_DATA.dress.map((d, i) => (
+            <p key={i} style={{ fontSize: 14, lineHeight: 2, color: d.em ? T.accent : T.text, fontWeight: d.em ? 600 : 400 }}>{t(d.t)}</p>
           ))}
         </InfoSection>
       </div>
 
       {/* ─── EMERGENCY ─── */}
       <div className="s8">
-        <InfoSection icon={Icon.phone} label="Emergency">
-          {INFO.sos.map((s, i) => <Row key={i} label={s.k} value={s.v} link last={i === INFO.sos.length - 1} />)}
+        <InfoSection icon={Icon.phone} label={t(INFO_STRINGS.emergency)}>
+          {INFO_DATA.sos.map((s, i) => <Row key={i} label={t(s.k)} value={s.v} link last={i === INFO_DATA.sos.length - 1} />)}
         </InfoSection>
       </div>
     </div>

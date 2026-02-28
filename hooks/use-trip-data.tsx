@@ -24,13 +24,17 @@ export type V8Card = {
   next: string | null; nextTime: string | null; nextSlug: string | null;
 };
 
-const DAY_META: Record<number, [string, string]> = {
-  0: ["Feb 28", "Arrival Day"], 1: ["Mar 1", "Core Darshan"], 2: ["Mar 2", "Return Day"],
+const DAY_META: Record<number, [string, BilingualText]> = {
+  0: ["Feb 28", { en: "Arrival Day", hi: "पहुँचने का दिन" }],
+  1: ["Mar 1", { en: "Core Darshan", hi: "मुख्य दर्शन" }],
+  2: ["Mar 2", { en: "Return Day", hi: "वापसी का दिन" }],
 };
 
 function toV8Card(card: StepCard, t: (bi: BilingualText) => string): V8Card {
   const nextCard = card.nextSlug ? LIB_CARDS.find(c => c.slug === card.nextSlug) ?? null : null;
-  const [dayLabel, dayTitle] = DAY_META[card.dayNumber] ?? ["", ""];
+  const meta = DAY_META[card.dayNumber];
+  const dayLabel = meta?.[0] ?? "";
+  const dayTitle = meta?.[1] ? t(meta[1]) : "";
   const phaseNum = card.phase ? parseInt(card.phase.match(/\d/)?.[0] ?? "0") : null;
   return {
     slug: card.slug, day: card.dayNumber, dayLabel, dayTitle, sort: card.sortOrder,
