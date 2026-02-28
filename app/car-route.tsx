@@ -8,25 +8,25 @@ import { computeAdjustedRouteTimes, formatTime, type AdjustedTime } from "@/lib/
 const T = {
   bg:        "#FAF9F6",
   surface:   "#FFFFFF",
-  wash:      "#F3F2EF",
+  wash:      "#F5F5F3",
   sunken:    "#E8E6E1",
-  text:      "#181511",
-  secondary: "#6B665E",
-  tertiary:  "#9B958C",
+  text:      "#1D1D1F",
+  secondary: "#6E6E73",
+  tertiary:  "#AEAEB2",
   accent:    "#9B6B2C",
   accentSoft:"rgba(155,107,44,0.06)",
-  accentMid: "rgba(155,107,44,0.14)",
-  done:      "#2D8B55",
-  doneSoft:  "rgba(45,139,85,0.08)",
-  critical:  "#8B3A3A",
-  criticalSoft:"rgba(139,58,58,0.08)",
-  blue:      "#2B6BBF",
-  border:    "rgba(24,21,17,0.05)",
-  sans:      "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-  mono:      "'DM Mono', 'SF Mono', monospace",
+  accentMid: "rgba(155,107,44,0.12)",
+  done:      "#34C759",
+  doneSoft:  "rgba(52,199,89,0.08)",
+  critical:  "#FF3B30",
+  criticalSoft:"rgba(255,59,48,0.06)",
+  blue:      "#007AFF",
+  border:    "rgba(60,60,67,0.06)",
+  sans:      "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Instrument Sans', system-ui, sans-serif",
+  mono:      "'SF Mono', 'DM Mono', ui-monospace, monospace",
   r:         "14px",
   rFull:     "999px",
-  ease:      "cubic-bezier(0.22, 1, 0.36, 1)",
+  ease:      "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
 };
 
 /* ─── Route Data ─── */
@@ -137,21 +137,21 @@ function PlaceWeather({ lat, lon, place, enabled }: { lat: number; lon: number; 
       display: "flex", alignItems: "center", gap: 12,
       padding: "10px 14px",
       marginTop: 12,
-      background: T.wash,
+      background: "rgba(120,120,128,0.04)",
       borderRadius: 10,
       animation: "crSlideIn .2s ease both",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <span style={{ fontSize: 16, lineHeight: 1 }}>{weatherConditionIcon(data.code)}</span>
         <span style={{
-          fontSize: 18, fontWeight: 300, color: T.text,
+          fontSize: 18, fontWeight: 200, color: T.text,
           letterSpacing: "-0.03em", lineHeight: 1,
           fontVariantNumeric: "tabular-nums",
         }}>{data.temp}°</span>
       </div>
-      <div style={{ width: 1, height: 16, background: T.sunken }} />
+      <div style={{ width: 0.5, height: 14, background: T.tertiary, opacity: 0.3 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 11, fontWeight: 500, color: T.secondary, lineHeight: 1.3, margin: 0 }}>
+        <p style={{ fontSize: 12, fontWeight: 400, color: T.secondary, lineHeight: 1.3, margin: 0 }}>
           {weatherLabel(data.code)} · {place}
         </p>
         <p style={{
@@ -205,17 +205,17 @@ export default function CarRoutePage() {
         {/* ── Departure + Day Header ── */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          marginBottom: 24,
+          marginBottom: 28,
         }}>
           <div>
             <p style={{
-              fontSize: 10, fontWeight: 600, letterSpacing: "0.08em",
-              textTransform: "uppercase", color: T.tertiary,
+              fontSize: 11, fontWeight: 500, letterSpacing: "0.02em",
+              color: T.tertiary,
               margin: "0 0 4px",
             }}>Feb 28 · Travel Day</p>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
               <p style={{
-                fontSize: 22, fontWeight: 600, letterSpacing: "-0.03em",
+                fontSize: 24, fontWeight: 600, letterSpacing: "-0.025em",
                 color: T.text, margin: 0, fontVariantNumeric: "tabular-nums",
               }}>{formatTime(effectiveStart)}</p>
               {startTime !== null && startTime !== DEFAULT_START && (
@@ -287,7 +287,7 @@ export default function CarRoutePage() {
           {/* Vertical rail */}
           <div style={{
             position: "absolute", left: 9, top: 12, bottom: 12,
-            width: 1.5, background: T.sunken, borderRadius: 1, opacity: 0.5,
+            width: 1, background: T.sunken, borderRadius: 0.5, opacity: 0.4,
           }} />
 
           {phases.map((p, i) => {

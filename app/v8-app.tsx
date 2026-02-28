@@ -21,29 +21,29 @@ import type { StepCard, BilingualText } from "@/lib/types";
 const T = {
   bg:        "#FAF9F6",
   surface:   "#FFFFFF",
-  wash:      "#F3F2EF",
+  wash:      "#F5F5F3",
   sunken:    "#E8E6E1",
-  text:      "#181511",
-  secondary: "#5C574F",
-  tertiary:  "#8E8A82",
+  text:      "#1D1D1F",
+  secondary: "#6E6E73",
+  tertiary:  "#AEAEB2",
   accent:    "#9B6B2C",
   accentHover:"#7D5522",
-  accentSoft:"rgba(155,107,44,0.09)",
-  accentMid: "rgba(155,107,44,0.16)",
-  done:      "#28784A",
-  doneSoft:  "rgba(40,120,74,0.1)",
-  blue:      "#2B6BBF",
-  blueSoft:  "rgba(43,107,191,0.08)",
-  border:    "rgba(24,21,17,0.06)",
-  shadow:    "0 2px 8px rgba(24,21,17,0.04)",
-  shadowMd:  "0 4px 20px rgba(24,21,17,0.06)",
-  shadowLg:  "0 8px 40px rgba(24,21,17,0.08)",
-  sans:      "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
-  mono:      "'DM Mono', 'SF Mono', monospace",
+  accentSoft:"rgba(155,107,44,0.07)",
+  accentMid: "rgba(155,107,44,0.14)",
+  done:      "#34C759",
+  doneSoft:  "rgba(52,199,89,0.08)",
+  blue:      "#007AFF",
+  blueSoft:  "rgba(0,122,255,0.08)",
+  border:    "rgba(60,60,67,0.06)",
+  shadow:    "0 0.5px 0 rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.04)",
+  shadowMd:  "0 2px 12px rgba(0,0,0,0.06)",
+  shadowLg:  "0 4px 24px rgba(0,0,0,0.08)",
+  sans:      "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Instrument Sans', system-ui, sans-serif",
+  mono:      "'SF Mono', 'DM Mono', ui-monospace, monospace",
   r:         "12px",
   rLg:       "16px",
   rFull:     "999px",
-  ease:      "cubic-bezier(0.22, 1, 0.36, 1)",
+  ease:      "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
   easeOut:   "cubic-bezier(0.16, 1, 0.3, 1)",
 };
 
@@ -288,20 +288,21 @@ function HeroCard({ slug, phase, title, sub, onTap }: { slug: string; phase: num
     <div
       onClick={onTap ? () => onTap(t.img, title) : undefined}
       style={{
-        position: "relative", borderRadius: T.rLg, overflow: "hidden",
-        aspectRatio: "16/9", boxShadow: T.shadowLg,
+        position: "relative", borderRadius: 16, overflow: "hidden",
+        aspectRatio: "16/9",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.08)",
         background: t.tint,
         cursor: onTap ? "pointer" : undefined,
       }}
     >
       <img src={t.img} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.5) 100%)" }} />
       {phase && (
-        <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.12)", color: "white", fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", padding: "5px 14px", borderRadius: T.rFull }}>Phase {phase} of 3</div>
+        <div style={{ position: "absolute", top: 16, left: 16, background: "rgba(255,255,255,0.16)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", border: "1px solid rgba(255,255,255,0.1)", color: "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", padding: "5px 14px", borderRadius: T.rFull }}>Phase {phase} of 3</div>
       )}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 24px 24px" }}>
-        <h2 style={{ fontSize: 25, fontWeight: 600, color: "white", lineHeight: 1.18, letterSpacing: "-0.025em", marginBottom: 4 }}>{title}</h2>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 400, lineHeight: 1.4 }}>{sub}</p>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: "white", lineHeight: 1.14, letterSpacing: "-0.022em", marginBottom: 4 }}>{title}</h2>
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", fontWeight: 400, lineHeight: 1.4 }}>{sub}</p>
       </div>
     </div>
   );
@@ -309,19 +310,19 @@ function HeroCard({ slug, phase, title, sub, onTap }: { slug: string; phase: num
 
 function PhaseBar({ currentPhase }: { currentPhase: number }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", padding: "18px 20px", borderRadius: T.r, background: T.surface, border: `1px solid ${T.border}` }}>
+    <div style={{ display: "flex", alignItems: "center", padding: "16px 20px", borderRadius: T.r, background: T.surface, border: `0.5px solid ${T.border}` }}>
       {PHASE_STEPS.map((step, i) => {
         const n = i + 1, done = currentPhase > n, active = currentPhase === n;
         return (
           <div key={i} style={{ display: "flex", alignItems: "center", flex: 1 }}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flex: "0 0 auto" }}>
-              <div style={{ width: 26, height: 26, borderRadius: "50%", background: done ? T.done : active ? T.accent : T.wash, border: done || active ? "none" : `1.5px solid ${T.border}`, display: "flex", alignItems: "center", justifyContent: "center", transition: `all .35s ${T.ease}` }}>
-                {done && <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
-                {active && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "white" }} />}
+              <div style={{ width: 24, height: 24, borderRadius: "50%", background: done ? T.done : active ? T.accent : "rgba(120,120,128,0.06)", border: done || active ? "none" : `1px solid rgba(60,60,67,0.1)`, display: "flex", alignItems: "center", justifyContent: "center", transition: `all .25s ${T.ease}` }}>
+                {done && <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
+                {active && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />}
               </div>
-              <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.02em", color: done ? T.done : active ? T.accent : T.tertiary }}>{step}</span>
+              <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.01em", color: done ? T.done : active ? T.accent : T.tertiary }}>{step}</span>
             </div>
-            {i < PHASE_STEPS.length - 1 && <div style={{ flex: 1, height: 1.5, margin: "0 8px", marginBottom: 20, background: done ? T.done : T.sunken, borderRadius: 1, transition: `background .4s ${T.ease}` }} />}
+            {i < PHASE_STEPS.length - 1 && <div style={{ flex: 1, height: 1, margin: "0 8px", marginBottom: 20, background: done ? T.done : T.sunken, borderRadius: 0.5, transition: `background .25s ${T.ease}`, opacity: done ? 1 : 0.5 }} />}
           </div>
         );
       })}
@@ -336,15 +337,15 @@ function TimeDisplay({ time, dur, shifted, delta }: { time: string; dur: number;
     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
         <span style={{ color: T.tertiary, display: "flex", alignItems: "center", marginRight: 2 }}>{Icon.clock}</span>
-        <span style={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.035em", lineHeight: 1, fontVariantNumeric: "tabular-nums", color: shifted ? T.blue : T.text }}>{parts[0]?.trim().split(" ")[0]}</span>
+        <span style={{ fontSize: 30, fontWeight: 300, letterSpacing: "-0.035em", lineHeight: 1, fontVariantNumeric: "tabular-nums", color: shifted ? T.blue : T.text }}>{parts[0]?.trim().split(" ")[0]}</span>
         <span style={{ fontSize: 14, fontWeight: 400, color: shifted ? T.blue : T.secondary, letterSpacing: "-0.01em" }}>{time.includes("–") ? `– ${parts[1]?.trim()}` : time.split(" ").slice(1).join(" ")}</span>
         {shifted && delta != null && delta !== 0 && (
-          <span style={{ fontSize: 11, fontWeight: 600, color: delta > 0 ? "#8B3A3A" : T.done, background: delta > 0 ? "rgba(139,58,58,0.1)" : T.doneSoft, padding: "2px 8px", borderRadius: 6, marginLeft: 4 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: delta > 0 ? "#FF3B30" : T.done, background: delta > 0 ? "rgba(255,59,48,0.06)" : T.doneSoft, padding: "2px 8px", borderRadius: 6, marginLeft: 4 }}>
             {delta > 0 ? `+${delta}m` : `${delta}m`}
           </span>
         )}
       </div>
-      <span style={{ fontSize: 12, fontWeight: 500, color: T.secondary, background: T.wash, padding: "5px 12px", borderRadius: T.rFull }}>{durStr}</span>
+      <span style={{ fontSize: 12, fontWeight: 500, color: T.secondary, background: "rgba(120,120,128,0.06)", padding: "5px 12px", borderRadius: T.rFull }}>{durStr}</span>
     </div>
   );
 }
@@ -353,17 +354,17 @@ function CarryList({ items }: { items: string[] }) {
   const [ck, setCk] = useState<Record<number, boolean>>({});
   if (!items.length) return null;
   return (
-    <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: T.r, padding: "16px 18px" }}>
+    <div style={{ background: T.surface, border: `0.5px solid ${T.border}`, borderRadius: T.r, padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
         <span style={{ color: T.tertiary }}>{Icon.bag}</span>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.tertiary }}>Carry</span>
+        <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary }}>Carry</span>
       </div>
       {items.map((item, i) => (
-        <div key={i} onClick={() => setCk(p => ({ ...p, [i]: !p[i] }))} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", cursor: "pointer", userSelect: "none" }}>
-          <div style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, border: ck[i] ? "none" : `1.5px solid ${T.tertiary}`, background: ck[i] ? T.done : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: `all .2s ${T.ease}`, animation: ck[i] ? "checkIn .3s ease" : "none" }}>
-            {ck[i] && <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
+        <div key={i} onClick={() => setCk(p => ({ ...p, [i]: !p[i] }))} style={{ display: "flex", alignItems: "center", gap: 12, padding: "7px 0", cursor: "pointer", userSelect: "none" }}>
+          <div style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, border: ck[i] ? "none" : `1px solid rgba(60,60,67,0.18)`, background: ck[i] ? T.done : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: `all .15s ${T.ease}`, animation: ck[i] ? "checkIn .3s ease" : "none" }}>
+            {ck[i] && <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
           </div>
-          <span style={{ fontSize: 14, fontWeight: 400, color: ck[i] ? T.tertiary : T.text, textDecoration: ck[i] ? "line-through" : "none", transition: `all .2s ${T.ease}` }}>{item}</span>
+          <span style={{ fontSize: 15, fontWeight: 400, color: ck[i] ? T.tertiary : T.text, textDecoration: ck[i] ? "line-through" : "none", transition: `all .15s ease`, letterSpacing: "-0.01em" }}>{item}</span>
         </div>
       ))}
     </div>
@@ -373,13 +374,13 @@ function CarryList({ items }: { items: string[] }) {
 function NextPeek({ title, time, slug }: { title: string | null; time: string | null; slug: string | null }) {
   if (!title) return null;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: T.r, background: T.surface, border: `1px solid ${T.border}` }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: T.r, background: T.surface, border: `0.5px solid ${T.border}` }}>
       <Swatch slug={slug || "check-in"} size={44} radius={12} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 2 }}>Up next</p>
-        <p style={{ fontSize: 14, fontWeight: 500, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{title}</p>
+        <p style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary, marginBottom: 2 }}>Up next</p>
+        <p style={{ fontSize: 15, fontWeight: 500, color: T.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: "-0.01em" }}>{title}</p>
       </div>
-      <span style={{ fontSize: 13, color: T.secondary, fontVariantNumeric: "tabular-nums", flexShrink: 0 }}>{time}</span>
+      <span style={{ fontSize: 13, color: T.secondary, fontVariantNumeric: "tabular-nums", flexShrink: 0, letterSpacing: "-0.01em" }}>{time}</span>
     </div>
   );
 }
@@ -387,10 +388,10 @@ function NextPeek({ title, time, slug }: { title: string | null; time: string | 
 function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = (current / total) * 100;
   return (
-    <div style={{ position: "relative", height: 2, borderRadius: T.rFull, background: T.sunken }}>
-      <div style={{ width: `${pct}%`, height: "100%", borderRadius: T.rFull, background: T.accent, transition: `width .6s ${T.ease}` }} />
+    <div style={{ position: "relative", height: 2, borderRadius: T.rFull, background: "rgba(120,120,128,0.08)" }}>
+      <div style={{ width: `${pct}%`, height: "100%", borderRadius: T.rFull, background: T.accent, transition: `width .4s ${T.ease}` }} />
       {DAY_MILESTONES.map((mi, i) => (
-        <div key={i} style={{ position: "absolute", top: "50%", left: `${(mi / total) * 100}%`, transform: "translate(-50%,-50%)", width: 6, height: 6, borderRadius: "50%", background: current > mi ? T.accent : T.bg, border: current > mi ? "none" : `1.5px solid ${T.sunken}`, transition: `all .35s ${T.ease}` }} />
+        <div key={i} style={{ position: "absolute", top: "50%", left: `${(mi / total) * 100}%`, transform: "translate(-50%,-50%)", width: 5, height: 5, borderRadius: "50%", background: current > mi ? T.accent : T.bg, border: current > mi ? "none" : `1px solid rgba(60,60,67,0.12)`, transition: `all .25s ${T.ease}` }} />
       ))}
     </div>
   );
@@ -400,16 +401,16 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
 function InfoSection({ icon, label, defaultOpen = false, children, badge }: { icon: React.ReactNode; label: string; defaultOpen?: boolean; children: React.ReactNode; badge?: string }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div style={{ background: T.surface, borderRadius: T.r, border: `1px solid ${T.border}`, marginBottom: 12, overflow: "hidden" }}>
-      <div onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 18px", cursor: "pointer", userSelect: "none" }}>
-        <div style={{ width: 34, height: 34, borderRadius: 9, background: T.wash, display: "flex", alignItems: "center", justifyContent: "center", color: T.secondary, flexShrink: 0 }}>{icon}</div>
-        <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em", flex: 1 }}>{label}</span>
-        {badge && <span style={{ fontSize: 11, fontWeight: 600, color: T.accent, background: T.accentSoft, padding: "3px 10px", borderRadius: T.rFull }}>{badge}</span>}
-        <div style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition: `transform .25s ${T.ease}`, color: T.tertiary }}>{Icon.chevDown}</div>
+    <div style={{ background: T.surface, borderRadius: T.r, border: `0.5px solid ${T.border}`, marginBottom: 12, overflow: "hidden" }}>
+      <div onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", cursor: "pointer", userSelect: "none" }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(120,120,128,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: T.secondary, flexShrink: 0 }}>{icon}</div>
+        <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: "-0.015em", flex: 1 }}>{label}</span>
+        {badge && <span style={{ fontSize: 12, fontWeight: 500, color: T.accent, background: T.accentSoft, padding: "3px 10px", borderRadius: T.rFull }}>{badge}</span>}
+        <div style={{ transform: open ? "rotate(180deg)" : "rotate(0)", transition: `transform .2s ${T.ease}`, color: T.tertiary }}>{Icon.chevDown}</div>
       </div>
       {open && (
         <div style={{ padding: "0 18px 18px", animation: "slideIn .2s ease both" }}>
-          <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 16 }}>{children}</div>
+          <div style={{ borderTop: `0.5px solid ${T.border}`, paddingTop: 16 }}>{children}</div>
         </div>
       )}
     </div>
@@ -448,10 +449,10 @@ function ScreenNow({ card, adjusted, onDone, onSkip, onImageTap }: { card: V8Car
   return (
     <div key={card.slug} style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
       <div className="s1" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.accent }}>Day {card.day}</span>
-        <span style={{ fontSize: 11, color: T.tertiary, fontWeight: 500 }}>{card.dayLabel}</span>
-        <span style={{ fontSize: 11, color: T.tertiary }}>·</span>
-        <span style={{ fontSize: 11, color: T.secondary }}>{card.dayTitle}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: T.accent }}>Day {card.day}</span>
+        <span style={{ fontSize: 12, color: T.tertiary, fontWeight: 400 }}>{card.dayLabel}</span>
+        <span style={{ fontSize: 12, color: T.tertiary, opacity: 0.5 }}>·</span>
+        <span style={{ fontSize: 12, color: T.secondary, fontWeight: 400 }}>{card.dayTitle}</span>
       </div>
       <div className="s2"><WeatherWidget /></div>
       <div className="s3"><HeroCard slug={card.slug} phase={card.phase} title={card.title} sub={card.sub} onTap={onImageTap} /></div>
@@ -466,11 +467,11 @@ function ScreenNow({ card, adjusted, onDone, onSkip, onImageTap }: { card: V8Car
         </div>
       ) : null; })()}
       {card.carry.length > 0 && <div className={card.phase ? "s7" : "s6"}><CarryList items={card.carry} /></div>}
-      <div className={card.phase ? "s7" : "s6"} style={{ display: "flex", gap: 10, marginTop: 2 }}>
+      <div className={card.phase ? "s7" : "s6"} style={{ display: "flex", gap: 10, marginTop: 4 }}>
         {card.skip && (
-          <button className="press" onClick={onSkip} style={{ flex: "0 0 auto", padding: "16px 22px", borderRadius: T.r, border: `1.5px solid ${T.border}`, background: "transparent", color: T.secondary, fontSize: 14, fontWeight: 500, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>{Icon.skip} Skip</button>
+          <button className="press" onClick={onSkip} style={{ flex: "0 0 auto", padding: "16px 22px", borderRadius: T.r, border: `1px solid rgba(60,60,67,0.1)`, background: "transparent", color: T.secondary, fontSize: 15, fontWeight: 400, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>{Icon.skip} Skip</button>
         )}
-        <button className="press" onClick={handleDone} style={{ flex: 1, padding: "16px 24px", borderRadius: T.r, border: "none", background: done ? T.done : T.text, color: "white", fontSize: 15, fontWeight: 600, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: `background .3s ${T.ease}` }}>
+        <button className="press" onClick={handleDone} style={{ flex: 1, padding: "16px 24px", borderRadius: T.r, border: "none", background: done ? T.done : T.text, color: "white", fontSize: 16, fontWeight: 600, fontFamily: T.sans, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: `background .2s ease`, letterSpacing: "-0.01em" }}>
           {done ? <><svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> Done</> : <>{Icon.check} Mark Complete</>}
         </button>
       </div>
@@ -492,17 +493,17 @@ function ScreenPlan({ cards, currentIdx, adjustedTimes, onImageTap }: { cards: V
         return (
           <div key={dn} style={{ marginBottom: 36 }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T.accent }}>Day {dn}</span>
-              <span style={{ fontSize: 11, color: T.tertiary, fontWeight: 500 }}>{dt}</span>
-              <span style={{ fontSize: 11, color: T.tertiary }}>·</span>
-              <span style={{ fontSize: 11, color: T.secondary }}>{lb}</span>
-              <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, fontVariantNumeric: "tabular-nums", color: doneCount === total && doneCount > 0 ? T.done : T.tertiary }}>{doneCount}/{total}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.02em", color: T.accent }}>Day {dn}</span>
+              <span style={{ fontSize: 12, color: T.tertiary, fontWeight: 400 }}>{dt}</span>
+              <span style={{ fontSize: 12, color: T.tertiary, opacity: 0.5 }}>·</span>
+              <span style={{ fontSize: 12, color: T.secondary, fontWeight: 400 }}>{lb}</span>
+              <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: doneCount === total && doneCount > 0 ? T.done : T.tertiary }}>{doneCount}/{total}</span>
             </div>
-            <div style={{ height: 2, borderRadius: T.rFull, background: T.sunken, marginBottom: 20 }}>
+            <div style={{ height: 2, borderRadius: T.rFull, background: "rgba(120,120,128,0.08)", marginBottom: 20 }}>
               <div style={{ width: `${total > 0 ? (doneCount / total) * 100 : 0}%`, height: "100%", borderRadius: T.rFull, background: doneCount === total && doneCount > 0 ? T.done : T.accent, transition: `width .4s ${T.ease}` }} />
             </div>
             <div style={{ position: "relative", paddingLeft: 32 }}>
-              <div style={{ position: "absolute", left: 11, top: 12, bottom: 12, width: 1, background: T.sunken }} />
+              <div style={{ position: "absolute", left: 11, top: 12, bottom: 12, width: 1, background: T.sunken, opacity: 0.4 }} />
               {dc.map(card => {
                 const gi = cards.indexOf(card), isCurr = gi === currentIdx, isDone = gi < currentIdx, isExp = exp === card.slug;
                 const adj = adjustedTimes[card.slug];
@@ -510,12 +511,12 @@ function ScreenPlan({ cards, currentIdx, adjustedTimes, onImageTap }: { cards: V
                 const planShifted = adj?.shifted ?? false;
                 return (
                   <div key={card.slug} style={{ position: "relative", marginBottom: 2 }}>
-                    <div style={{ position: "absolute", left: -27, top: 20, width: 14, height: 14, borderRadius: "50%", zIndex: 2, background: isDone ? T.done : isCurr ? T.accent : T.bg, border: isDone || isCurr ? "none" : `1.5px solid ${T.sunken}`, display: "flex", alignItems: "center", justifyContent: "center", transition: `all .2s ${T.ease}` }}>
-                      {isDone && <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
-                      {isCurr && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "white" }} />}
+                    <div style={{ position: "absolute", left: -27, top: 20, width: 12, height: 12, borderRadius: "50%", zIndex: 2, background: isDone ? T.done : isCurr ? T.accent : T.bg, border: isDone || isCurr ? "none" : `1px solid rgba(60,60,67,0.15)`, display: "flex", alignItems: "center", justifyContent: "center", transition: `all .2s ${T.ease}` }}>
+                      {isDone && <svg width="7" height="7" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>}
+                      {isCurr && <div style={{ width: 5, height: 5, borderRadius: "50%", background: "white" }} />}
                     </div>
-                    {isCurr && <div style={{ position: "absolute", left: -27, top: 20, width: 14, height: 14, borderRadius: "50%", border: `2px solid ${T.accent}`, animation: "softPulse 2s ease-in-out infinite", zIndex: 1 }} />}
-                    <div onClick={() => setExp(isExp ? null : card.slug)} style={{ padding: "14px 16px", borderRadius: T.r, cursor: "pointer", background: isCurr ? T.surface : "transparent", border: isCurr ? `1px solid ${T.border}` : "1px solid transparent", boxShadow: isCurr ? T.shadow : "none", transition: `all .25s ${T.ease}` }}>
+                    {isCurr && <div style={{ position: "absolute", left: -28, top: 19, width: 14, height: 14, borderRadius: "50%", border: `1.5px solid ${T.accent}`, animation: "softPulse 2s ease-in-out infinite", zIndex: 1, opacity: 0.5 }} />}
+                    <div onClick={() => setExp(isExp ? null : card.slug)} style={{ padding: "14px 16px", borderRadius: T.r, cursor: "pointer", background: isCurr ? T.surface : "transparent", border: isCurr ? `0.5px solid ${T.border}` : "0.5px solid transparent", boxShadow: isCurr ? T.shadow : "none", transition: `all .2s ${T.ease}` }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                         <Swatch slug={card.slug} size={40} radius={11} onTap={onImageTap} />
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -562,7 +563,7 @@ function ScreenInfo({ packing }: { packing: { isChecked: (k: string, i: number) 
 
   return (
     <div style={{ padding: "0 24px 24px" }}>
-      <p className="s1" style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: T.tertiary, marginBottom: 16 }}>Reference</p>
+      <p className="s1" style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.02em", color: T.tertiary, marginBottom: 16 }}>Reference</p>
 
       {/* ─── CASH BUDGET ─── */}
       <div className="s2">
@@ -770,48 +771,53 @@ export default function App() {
 
       <header style={{
         position: "sticky", top: 0, zIndex: 10,
-        background: T.bg,
-        padding: "20px 24px 24px",
+        background: "rgba(250,249,246,0.72)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        padding: "16px 24px 14px",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <h1 style={{
-            fontSize: 32, fontWeight: 700, color: T.text,
-            letterSpacing: "-0.04em", lineHeight: 1.1,
+            fontSize: 34, fontWeight: 700, color: T.text,
+            letterSpacing: "-0.022em", lineHeight: 1.08,
             margin: 0, fontFamily: T.sans,
           }}>
             {tab === "now" ? "Now" : tab === "plan" ? "Plan" : tab === "info" ? "Info" : "Route"}
           </h1>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <button
               onClick={toggleLang}
               aria-label="Toggle language"
               style={{
-                width: 36, height: 36, borderRadius: 10,
-                border: "none", background: T.wash,
+                width: 34, height: 34, borderRadius: 17,
+                border: "none", background: "rgba(120,120,128,0.08)",
                 color: T.secondary, fontSize: 13, fontWeight: 600,
                 cursor: "pointer", fontFamily: T.sans,
                 display: "flex", alignItems: "center", justifyContent: "center",
+                transition: `background .2s ${T.ease}`,
               }}
             >
               {lang === "en" ? "हि" : "EN"}
             </button>
             {tab === "route" ? (
               <div style={{
-                fontSize: 11, fontWeight: 600, color: T.accent,
-                fontFamily: T.mono, fontVariantNumeric: "tabular-nums",
-                padding: "6px 12px", borderRadius: 10,
+                fontSize: 12, fontWeight: 500, color: T.accent,
+                fontVariantNumeric: "tabular-nums",
+                padding: "6px 12px", borderRadius: 20,
                 background: T.accentSoft,
+                letterSpacing: "-0.01em",
               }}>
-                552 km · ~10 hrs
+                552 km
               </div>
             ) : (
               <div style={{
-                fontSize: 11, fontWeight: 600, fontVariantNumeric: "tabular-nums",
-                color: allDone ? T.done : T.tertiary,
-                padding: "6px 12px", borderRadius: 10,
-                background: allDone ? T.doneSoft : T.wash,
+                fontSize: 12, fontWeight: 500, fontVariantNumeric: "tabular-nums",
+                color: allDone ? T.done : T.secondary,
+                padding: "6px 12px", borderRadius: 20,
+                background: allDone ? T.doneSoft : "rgba(120,120,128,0.08)",
+                letterSpacing: "-0.01em",
               }}>
-                {allDone ? "Done" : `${idx + 1}/${cards.length}`}
+                {allDone ? "Done" : `${idx + 1} of ${cards.length}`}
               </div>
             )}
           </div>
@@ -826,10 +832,10 @@ export default function App() {
         <div key={`${tab}-${morphKey}`} style={{ paddingBottom: 100 }}>
           {tab === "now" && !allDone && <ScreenNow card={card} adjusted={adjustedTimes[card.slug]} onDone={() => advance("done")} onSkip={() => advance("skipped")} onImageTap={(src, label) => setLightbox({ src, label })} />}
           {tab === "now" && allDone && (
-            <div style={{ padding: "60px 24px", textAlign: "center" as const }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🙏</div>
-              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Yatra Complete</h2>
-              <p style={{ fontSize: 14, color: T.secondary, lineHeight: 1.6 }}>All steps done. Har Har Mahadev!</p>
+            <div style={{ padding: "80px 24px", textAlign: "center" as const }}>
+              <div style={{ fontSize: 52, marginBottom: 20 }}>🙏</div>
+              <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.02em" }}>Yatra Complete</h2>
+              <p style={{ fontSize: 15, color: T.secondary, lineHeight: 1.6, fontWeight: 400 }}>All steps done. Har Har Mahadev!</p>
             </div>
           )}
           {tab === "plan" && <ScreenPlan cards={cards} currentIdx={idx} adjustedTimes={adjustedTimes} onImageTap={(src, label) => setLightbox({ src, label })} />}
@@ -849,11 +855,13 @@ export default function App() {
       <nav style={{
         position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
         width: "100%", maxWidth: 430, zIndex: 20,
-        background: T.bg,
-        borderTop: `1px solid ${T.border}`,
+        background: "rgba(250,249,246,0.72)",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        borderTop: "0.5px solid rgba(60,60,67,0.1)",
         display: "flex", justifyContent: "space-around",
-        paddingTop: 8,
-        paddingBottom: "max(8px, env(safe-area-inset-bottom, 0px))",
+        paddingTop: 6,
+        paddingBottom: "max(6px, env(safe-area-inset-bottom, 0px))",
       }}>
         {tabs.map(t => {
           const active = tab === t.id;
@@ -862,15 +870,15 @@ export default function App() {
               key={t.id}
               onClick={() => setTab(t.id)}
               style={{
-                flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                padding: "8px 4px", border: "none", background: "transparent",
+                flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                padding: "6px 4px", border: "none", background: "transparent",
                 cursor: "pointer", minWidth: 0,
-                color: active ? T.accent : T.tertiary,
-                transition: `color .2s ${T.ease}`,
+                color: active ? T.accent : "rgba(142,142,147,0.8)",
+                transition: `color .15s ease`,
               }}
             >
-              <div style={{ opacity: active ? 1 : 0.6 }}>{t.icon}</div>
-              <span style={{ fontSize: 11, fontWeight: active ? 600 : 500 }}>{t.label}</span>
+              <div style={{ opacity: active ? 1 : 0.55 }}>{t.icon}</div>
+              <span style={{ fontSize: 10, fontWeight: active ? 600 : 400, letterSpacing: "0.01em" }}>{t.label}</span>
             </button>
           );
         })}
