@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 /* ─── Design Tokens (mirrored from v8-app) ─── */
 const T = {
@@ -48,14 +48,7 @@ function WeatherIcon({ type, size = 48 }: { type: string; size?: number }) {
         <circle cx="32" cy="32" r="12" fill="rgba(255,255,255,0.95)" />
         <circle cx="32" cy="32" r="12" stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
         {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
-          <line
-            key={angle}
-            x1="32" y1={32 - 18} x2="32" y2={32 - 22}
-            stroke="rgba(255,255,255,0.8)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            transform={`rotate(${angle} 32 32)`}
-          />
+          <line key={angle} x1="32" y1={32 - 18} x2="32" y2={32 - 22} stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round" transform={`rotate(${angle} 32 32)`} />
         ))}
       </svg>
     );
@@ -141,7 +134,7 @@ function formatTime(iso: string): string {
 /* ─── Day name from ISO date ─── */
 function dayName(iso: string, i: number): string {
   if (i === 0) return "Today";
-  if (i === 1) return "Tomorrow";
+  if (i === 1) return "Tmrw";
   return new Date(iso).toLocaleDateString("en-IN", { weekday: "short" });
 }
 
@@ -176,6 +169,9 @@ export default function WeatherWidget() {
   const [data, setData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const expandRef = useRef<HTMLDivElement>(null);
+  const [expandHeight, setExpandHeight] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -186,9 +182,15 @@ export default function WeatherWidget() {
     return () => { cancelled = true; };
   }, []);
 
+  // Measure expanded content height for smooth animation
+  useEffect(() => {
+    if (expandRef.current) {
+      setExpandHeight(expandRef.current.scrollHeight);
+    }
+  }, [data, expanded]);
+
   const meta = useMemo(() => data ? weatherMeta(data.current.weather_code) : null, [data]);
 
-  // Next 8 hours
   const hourly = useMemo(() => {
     if (!data) return [];
     const now = new Date();
@@ -206,17 +208,17 @@ export default function WeatherWidget() {
       <div style={{
         borderRadius: T.rLg, overflow: "hidden",
         background: "linear-gradient(135deg, #C8B291 0%, #A89070 100%)",
-        padding: "28px 24px", minHeight: 160,
+        padding: "16px 20px", height: 64,
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
-            width: 16, height: 16, borderRadius: "50%",
+            width: 14, height: 14, borderRadius: "50%",
             border: "2px solid rgba(255,255,255,0.3)",
             borderTopColor: "rgba(255,255,255,0.9)",
             animation: "spin 0.8s linear infinite",
           }} />
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: T.sans, fontWeight: 500 }}>Loading weather...</span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: T.sans, fontWeight: 500 }}>Loading weather...</span>
         </div>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
@@ -228,9 +230,9 @@ export default function WeatherWidget() {
       <div style={{
         borderRadius: T.rLg, overflow: "hidden",
         background: "linear-gradient(135deg, #C8B291 0%, #A89070 100%)",
-        padding: "24px",
+        padding: "16px 20px",
       }}>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: T.sans }}>Weather unavailable</p>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontFamily: T.sans }}>Weather unavailable</p>
       </div>
     );
   }
@@ -242,225 +244,245 @@ export default function WeatherWidget() {
   const lo = Math.round(daily.temperature_2m_min[0]);
 
   return (
-    <div style={{
-      borderRadius: T.rLg, overflow: "hidden",
-      background: meta.gradient,
-      position: "relative",
-      fontFamily: T.sans,
-    }}>
-      {/* Subtle glass shimmer overlay */}
+    <div
+      onClick={() => setExpanded(e => !e)}
+      style={{
+        borderRadius: T.rLg, overflow: "hidden",
+        background: meta.gradient,
+        position: "relative",
+        fontFamily: T.sans,
+        cursor: "pointer",
+        WebkitTapHighlightColor: "transparent",
+        transition: `box-shadow .4s ${T.ease}`,
+        boxShadow: expanded ? T.shadowMd : T.shadow,
+      }}
+    >
+      {/* Glass shimmer */}
       <div style={{
         position: "absolute", inset: 0,
         background: "linear-gradient(165deg, rgba(255,255,255,0.12) 0%, transparent 40%, rgba(255,255,255,0.04) 100%)",
         pointerEvents: "none",
       }} />
 
-      {/* Main current weather */}
-      <div style={{ position: "relative", padding: "24px 24px 0" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      {/* ── Compact Header (always visible) ── */}
+      <div style={{
+        position: "relative",
+        padding: "14px 18px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ flexShrink: 0 }}>
+            <WeatherIcon type={meta.icon} size={36} />
+          </div>
           <div>
-            <div style={{
-              fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
-              textTransform: "uppercase" as const,
-              color: "rgba(255,255,255,0.65)",
-              marginBottom: 4,
-            }}>
-              Rameshwaram
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span style={{
+                fontSize: 28, fontWeight: 300, color: "white",
+                lineHeight: 1, letterSpacing: "-0.03em",
+                fontVariantNumeric: "tabular-nums",
+              }}>
+                {temp}°
+              </span>
+              <span style={{
+                fontSize: 12, fontWeight: 500,
+                color: "rgba(255,255,255,0.6)",
+              }}>
+                {meta.label}
+              </span>
             </div>
             <div style={{
-              fontSize: 56, fontWeight: 200, color: "white",
-              lineHeight: 1, letterSpacing: "-0.04em",
+              fontSize: 11, color: "rgba(255,255,255,0.45)",
+              fontWeight: 400, marginTop: 1,
               fontVariantNumeric: "tabular-nums",
             }}>
-              {temp}°
-            </div>
-            <div style={{
-              fontSize: 14, color: "rgba(255,255,255,0.75)",
-              fontWeight: 500, marginTop: 2,
-            }}>
-              {meta.label}
-            </div>
-            <div style={{
-              fontSize: 12, color: "rgba(255,255,255,0.5)",
-              fontWeight: 400, marginTop: 2,
-              fontVariantNumeric: "tabular-nums",
-            }}>
-              H:{hi}°  L:{lo}°
+              Rameshwaram · H:{hi}° L:{lo}°
             </div>
           </div>
-          <div style={{ marginTop: 4, opacity: 0.95 }}>
-            <WeatherIcon type={meta.icon} size={56} />
-          </div>
+        </div>
+
+        {/* Expand chevron */}
+        <div style={{
+          flexShrink: 0,
+          transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+          transition: `transform .35s ${T.ease}`,
+          color: "rgba(255,255,255,0.4)",
+        }}>
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
         </div>
       </div>
 
-      {/* Hourly forecast strip */}
-      <div style={{
-        position: "relative",
-        marginTop: 18,
-        padding: "14px 0",
-        borderTop: "1px solid rgba(255,255,255,0.12)",
-        overflowX: "auto",
-        WebkitOverflowScrolling: "touch",
-        scrollbarWidth: "none" as const,
-      }}>
+      {/* ── Expandable Content ── */}
+      <div
+        ref={expandRef}
+        onClick={e => e.stopPropagation()}
+        style={{
+          overflow: "hidden",
+          maxHeight: expanded ? expandHeight : 0,
+          opacity: expanded ? 1 : 0,
+          transition: `max-height .45s ${T.ease}, opacity .3s ${T.ease}`,
+        }}
+      >
+        {/* Hourly forecast strip */}
         <div style={{
-          display: "flex", gap: 0, paddingLeft: 24, paddingRight: 24,
-          minWidth: "min-content",
+          padding: "12px 0",
+          borderTop: "1px solid rgba(255,255,255,0.1)",
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none" as const,
         }}>
-          {hourly.map((h, i) => {
-            const hMeta = weatherMeta(h.code);
+          <div style={{
+            display: "flex", gap: 0, paddingLeft: 18, paddingRight: 18,
+            minWidth: "min-content",
+          }}>
+            {hourly.map((h, i) => {
+              const hMeta = weatherMeta(h.code);
+              return (
+                <div key={i} style={{
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  gap: 5, minWidth: 46, padding: "2px 0",
+                }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 500,
+                    color: i === 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)",
+                  }}>
+                    {h.hour}
+                  </span>
+                  <WeatherIcon type={hMeta.icon} size={18} />
+                  <span style={{
+                    fontSize: 12, fontWeight: 500,
+                    color: "rgba(255,255,255,0.85)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}>
+                    {h.temp}°
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Detail strip */}
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          padding: "12px 18px 14px",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+        }}>
+          {[
+            { label: "Feels", value: `${feelsLike}°` },
+            { label: "Humidity", value: `${current.relative_humidity_2m}%` },
+            { label: "Wind", value: `${Math.round(current.wind_speed_10m)} ${windDir(current.wind_direction_10m)}` },
+            { label: "UV", value: `${Math.round(daily.uv_index_max[0])}` },
+          ].map((item, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+              <span style={{ fontSize: 9, fontWeight: 500, color: "rgba(255,255,255,0.4)", letterSpacing: "0.02em" }}>
+                {item.label}
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)", fontVariantNumeric: "tabular-nums" }}>
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* 5-day forecast */}
+        <div style={{
+          padding: "0 18px 16px",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+        }}>
+          <div style={{
+            fontSize: 9, fontWeight: 600, letterSpacing: "0.1em",
+            textTransform: "uppercase" as const,
+            color: "rgba(255,255,255,0.35)",
+            padding: "10px 0 6px",
+          }}>
+            5-Day Forecast
+          </div>
+          {daily.time.map((day, i) => {
+            const dayMeta = weatherMeta(daily.weather_code[i]);
+            const dMax = Math.round(daily.temperature_2m_max[i]);
+            const dMin = Math.round(daily.temperature_2m_min[i]);
+            const allMax = Math.max(...daily.temperature_2m_max);
+            const allMin = Math.min(...daily.temperature_2m_min);
+            const range = allMax - allMin || 1;
+            const barLeft = ((dMin - allMin) / range) * 100;
+            const barWidth = ((dMax - dMin) / range) * 100;
+
             return (
               <div key={i} style={{
-                display: "flex", flexDirection: "column", alignItems: "center",
-                gap: 6, minWidth: 52, padding: "4px 0",
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "5px 0",
+                borderBottom: i < daily.time.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
               }}>
                 <span style={{
-                  fontSize: 11, fontWeight: 500,
-                  color: i === 0 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.55)",
+                  fontSize: 12, fontWeight: 500,
+                  color: i === 0 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.65)",
+                  width: 40, flexShrink: 0,
                 }}>
-                  {h.hour}
+                  {dayName(day, i)}
                 </span>
-                <WeatherIcon type={hMeta.icon} size={22} />
+                <div style={{ width: 18, flexShrink: 0, display: "flex", justifyContent: "center" }}>
+                  <WeatherIcon type={dayMeta.icon} size={16} />
+                </div>
                 <span style={{
-                  fontSize: 14, fontWeight: 500,
-                  color: "rgba(255,255,255,0.9)",
-                  fontVariantNumeric: "tabular-nums",
+                  fontSize: 12, color: "rgba(255,255,255,0.4)", width: 24, textAlign: "right" as const,
+                  fontVariantNumeric: "tabular-nums", flexShrink: 0,
                 }}>
-                  {h.temp}°
+                  {dMin}°
+                </span>
+                <div style={{
+                  flex: 1, height: 3, borderRadius: 2,
+                  background: "rgba(255,255,255,0.1)",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  <div style={{
+                    position: "absolute", top: 0, bottom: 0,
+                    left: `${barLeft}%`, width: `${Math.max(barWidth, 8)}%`,
+                    borderRadius: 2,
+                    background: "linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.6))",
+                  }} />
+                </div>
+                <span style={{
+                  fontSize: 12, color: "rgba(255,255,255,0.8)", width: 24, textAlign: "left" as const,
+                  fontVariantNumeric: "tabular-nums", fontWeight: 500, flexShrink: 0,
+                }}>
+                  {dMax}°
                 </span>
               </div>
             );
           })}
         </div>
-      </div>
 
-      {/* Detail strip */}
-      <div style={{
-        position: "relative",
-        display: "flex", justifyContent: "space-between",
-        padding: "14px 24px 18px",
-        borderTop: "1px solid rgba(255,255,255,0.1)",
-      }}>
-        {[
-          { label: "Feels like", value: `${feelsLike}°` },
-          { label: "Humidity", value: `${current.relative_humidity_2m}%` },
-          { label: "Wind", value: `${Math.round(current.wind_speed_10m)} km/h ${windDir(current.wind_direction_10m)}` },
-          { label: "UV Index", value: `${Math.round(daily.uv_index_max[0])}` },
-        ].map((item, i) => (
-          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-            <span style={{ fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.45)", letterSpacing: "0.02em" }}>
-              {item.label}
-            </span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.85)", fontVariantNumeric: "tabular-nums" }}>
-              {item.value}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* 5-day forecast */}
-      <div style={{
-        position: "relative",
-        padding: "0 24px 20px",
-        borderTop: "1px solid rgba(255,255,255,0.1)",
-      }}>
+        {/* Sunrise/Sunset */}
         <div style={{
-          fontSize: 10, fontWeight: 600, letterSpacing: "0.1em",
-          textTransform: "uppercase" as const,
-          color: "rgba(255,255,255,0.4)",
-          padding: "14px 0 10px",
+          display: "flex", justifyContent: "center", gap: 24,
+          padding: "10px 18px 16px",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
         }}>
-          5-Day Forecast
-        </div>
-        {daily.time.map((day, i) => {
-          const dayMeta = weatherMeta(daily.weather_code[i]);
-          const dMax = Math.round(daily.temperature_2m_max[i]);
-          const dMin = Math.round(daily.temperature_2m_min[i]);
-          // Bar visualization
-          const allMax = Math.max(...daily.temperature_2m_max);
-          const allMin = Math.min(...daily.temperature_2m_min);
-          const range = allMax - allMin || 1;
-          const barLeft = ((dMin - allMin) / range) * 100;
-          const barWidth = ((dMax - dMin) / range) * 100;
-
-          return (
-            <div key={i} style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "7px 0",
-              borderBottom: i < daily.time.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
-            }}>
-              <span style={{
-                fontSize: 13, fontWeight: 500,
-                color: i === 0 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.7)",
-                width: 52, flexShrink: 0,
-              }}>
-                {dayName(day, i)}
-              </span>
-              <div style={{ width: 22, flexShrink: 0, display: "flex", justifyContent: "center" }}>
-                <WeatherIcon type={dayMeta.icon} size={20} />
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2v3m0 14v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3m14 0h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
+            </svg>
+            <div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>Sunrise</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+                {formatTime(daily.sunrise[0])}
               </div>
-              <span style={{
-                fontSize: 13, color: "rgba(255,255,255,0.45)", width: 28, textAlign: "right" as const,
-                fontVariantNumeric: "tabular-nums", flexShrink: 0,
-              }}>
-                {dMin}°
-              </span>
-              {/* Temperature range bar */}
-              <div style={{
-                flex: 1, height: 4, borderRadius: 2,
-                background: "rgba(255,255,255,0.12)",
-                position: "relative", overflow: "hidden",
-              }}>
-                <div style={{
-                  position: "absolute", top: 0, bottom: 0,
-                  left: `${barLeft}%`, width: `${Math.max(barWidth, 8)}%`,
-                  borderRadius: 2,
-                  background: "linear-gradient(90deg, rgba(255,255,255,0.35), rgba(255,255,255,0.65))",
-                }} />
-              </div>
-              <span style={{
-                fontSize: 13, color: "rgba(255,255,255,0.85)", width: 28, textAlign: "left" as const,
-                fontVariantNumeric: "tabular-nums", fontWeight: 500, flexShrink: 0,
-              }}>
-                {dMax}°
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Sunrise/Sunset */}
-      <div style={{
-        position: "relative",
-        display: "flex", justifyContent: "center", gap: 32,
-        padding: "12px 24px 20px",
-        borderTop: "1px solid rgba(255,255,255,0.1)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2v3m0 14v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3m14 0h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
-            <path d="M3 17h18" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>Sunrise</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
-              {formatTime(daily.sunrise[0])}
             </div>
           </div>
-        </div>
-        <div style={{ width: 1, background: "rgba(255,255,255,0.1)", alignSelf: "stretch" }} />
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2v3m0 14v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3m14 0h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" />
-            <path d="M3 19h18" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontWeight: 500 }}>Sunset</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
-              {formatTime(daily.sunset[0])}
+          <div style={{ width: 1, background: "rgba(255,255,255,0.08)", alignSelf: "stretch" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2v3m0 14v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3m14 0h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="12" cy="12" r="4" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" />
+            </svg>
+            <div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", fontWeight: 500 }}>Sunset</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+                {formatTime(daily.sunset[0])}
+              </div>
             </div>
           </div>
         </div>
