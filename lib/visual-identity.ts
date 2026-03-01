@@ -128,7 +128,7 @@ export const VIS: Record<string, CardVisualIdentity> = {
 export const PHASE_STEPS = [
   { en: "Sea Bath", hi: "समुद्र स्नान" },
   { en: "22 Wells", hi: "22 कुंड" },
-  { en: "Jyotirlinga", hi: "ज्योतिर्लिंग" },
+  { en: "Ramalingum & Vishwalingum", hi: "रामलिंगम और विश्वलिंगम" },
 ];
 export const DAY_MILESTONES = [0, 2, 10]; // card indices where new days start
 
